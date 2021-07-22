@@ -18,4 +18,8 @@ public class Credentials
             e.printStackTrace();
         }
     }
+
+    public static URL getSymbolPriceURL(String symbol) throws MalformedURLException {
+        return new URL(String.format("https://finnhub.io/api/v1/quote?symbol=%s&token=%s", symbol, API_KEY));
+    }
 }

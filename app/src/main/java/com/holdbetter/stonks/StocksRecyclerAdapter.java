@@ -9,16 +9,21 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.holdbetter.stonks.databinding.StockListInstanceBinding;
-import com.holdbetter.stonks.model.StockHttpGetData;
+import com.holdbetter.stonks.model.StockHttpData;
+import com.holdbetter.stonks.model.StockSocketData;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
+
+import io.reactivex.rxjava3.core.Observable;
 
 public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAdapter.StocksViewHolder>
 {
-    private List<StockHttpGetData> stocks;
+    private List<StockHttpData> stocks;
 
     @NonNull
     @NotNull
@@ -33,7 +38,7 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
     public void onBindViewHolder(@NonNull @NotNull StocksRecyclerAdapter.StocksViewHolder holder, int position)
     {
         holder.stockNameView.setText(stocks.get(position).getStockName());
-        holder.price.setText(stocks.get(position).getCurrentPrice());
+        holder.price.setText(String.format("%s", stocks.get(position).getCurrentPrice()));
     }
 
     @Override
@@ -42,7 +47,34 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
         return stocks != null ? stocks.size() : 0;
     }
 
-    public void setStocks(@Nullable List<StockHttpGetData> stocks)
+    public void setStocksChanged(TreeSet<StockSocketData> stocksChanged)
+    {
+        ArrayList<StockHttpData> stocksCopy = new ArrayList<>(stocks);
+        for (StockSocketData stockSocketData : stocksChanged) {
+            int index = -1;
+            StockHttpData httpData = null;
+            for (StockHttpData stockHttpData : stocksCopy) {
+                if (stockSocketData.getS().equals(stockHttpData.getStockName())) {
+                    index = stocks.indexOf(stockHttpData);
+                    httpData = stockHttpData;
+                    break;
+                }
+            }
+
+            if (index != -1) {
+                //updatePrice
+                httpData.setCurrentPrice(stockSocketData.getP());
+                //notify
+//                notifyItemChanged(index);
+                notifyItemChanged(index);
+//                not
+                //delete from copy
+                stocksCopy.remove(httpData);
+            }
+        }
+    }
+
+    public void setStocks(@Nullable List<StockHttpData> stocks)
     {
         if (stocks != null) {
             this.stocks = stocks;

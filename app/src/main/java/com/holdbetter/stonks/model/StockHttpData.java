@@ -2,12 +2,12 @@ package com.holdbetter.stonks.model;
 
 import java.text.DecimalFormat;
 
-public class StockHttpGetData
+public class StockHttpData
 {
     private String stockName;
     private Price price;
 
-    public StockHttpGetData(String stockName)
+    public StockHttpData(String stockName)
     {
         this.stockName = stockName;
     }
@@ -19,6 +19,10 @@ public class StockHttpGetData
 
     public String getCurrentPrice() {
         return new DecimalFormat("##.#").format(price.c);
+    }
+
+    public void setCurrentPrice(double c) {
+        this.price.c = c;
     }
 
     public void setPrice(Price price) {
