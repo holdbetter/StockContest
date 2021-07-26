@@ -12,4 +12,10 @@
     <color name="statusBarColor">
         #000000
     </color>
+    <color name="positiveColor">
+        #24B25D
+    </color>
+    <color name="negativeColor">
+        #B22424
+    </color>
 </resources>

@@ -44,7 +44,7 @@ public class SocketMessageDeserializer implements JsonDeserializer<SortedSet<Sto
         switch (responseType) {
             case "error":
             case "ping":
-                return null;
+                return new TreeSet<>();
             case "trade":
                 Gson gson = new Gson();
                 JsonArray tradesArray = root.getAsJsonArray("data");
@@ -54,7 +54,7 @@ public class SocketMessageDeserializer implements JsonDeserializer<SortedSet<Sto
                 }
                 return stockSocketSet;
             default:
-                return null;
+                return new TreeSet<>();
         }
     }
 }

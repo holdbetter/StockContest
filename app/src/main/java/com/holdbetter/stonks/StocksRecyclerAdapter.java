@@ -13,7 +13,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.holdbetter.stonks.databinding.StockListInstanceBinding;
 import com.holdbetter.stonks.model.StockHttpData;
 import com.holdbetter.stonks.model.StockSocketData;
@@ -41,8 +40,19 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
     @Override
     public void onBindViewHolder(@NonNull @NotNull StocksRecyclerAdapter.StocksViewHolder holder, int position)
     {
-        holder.stockNameView.setText(stocks.get(position).getStockName());
-        holder.symbolPrice.setText(String.format("$%s", stocks.get(position).getCurrentPrice()));
+        StockHttpData stockData = stocks.get(position);
+        holder.stockName.setText(stockData.getSymbol());
+        holder.stockPrice.setText(String.format("$%s", stockData.getCurrentPrice()));
+        holder.companyName.setText(stockData.getCompanyName());
+        holder.stockPriceChange.setText(stockData.getFormattedPriceChange());
+
+        if (stockData.getFormattedPriceChange().charAt(0) == '+') {
+            holder.stockPriceChange.setTextColor(ContextCompat.getColor(holder.stockPriceChange.getContext(), R.color.positiveColor));
+        } else if (stockData.getFormattedPriceChange().charAt(0) == '-') {
+            holder.stockPriceChange.setTextColor(ContextCompat.getColor(holder.stockPriceChange.getContext(), R.color.negativeColor));
+        } else {
+            holder.stockPriceChange.setTextColor(ContextCompat.getColor(holder.stockPriceChange.getContext(), R.color.colorPrimaryDark));
+        }
 
         // set background type
         if (position % 2 == 0) {
@@ -89,7 +99,7 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
             int index = -1;
             StockHttpData httpData = null;
             for (StockHttpData stockHttpData : stocksCopy) {
-                if (stockSocketData.getS().equals(stockHttpData.getStockName())) {
+                if (stockSocketData.getS().equals(stockHttpData.getSymbol())) {
                     index = stocks.indexOf(stockHttpData);
                     httpData = stockHttpData;
                     break;
@@ -100,9 +110,7 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
                 //updatePrice
                 httpData.setCurrentPrice(stockSocketData.getP());
                 //notify
-//                notifyItemChanged(index);
                 notifyItemChanged(index);
-//                not
                 //delete from copy
                 stocksCopy.remove(httpData);
             }
@@ -120,8 +128,10 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
     }
 
     public static class StocksViewHolder extends RecyclerView.ViewHolder {
-        private final TextView stockNameView;
-        private final TextView symbolPrice;
+        private final TextView stockName;
+        private final TextView companyName;
+        private final TextView stockPriceChange;
+        private final TextView stockPrice;
         private final ImageView symbolImage;
         private final ConstraintLayout root;
 
@@ -130,9 +140,11 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
             super(binding.getRoot());
 
             root = binding.getRoot();
-            stockNameView = binding.stockName;
-            symbolPrice = binding.stockPrice;
+            stockName = binding.stockName;
+            stockPrice = binding.stockPrice;
             symbolImage = binding.symbolImage;
+            companyName = binding.companyName;
+            stockPriceChange = binding.stockPriceChange;
         }
     }
 }

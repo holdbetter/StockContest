@@ -6,47 +6,51 @@ import java.text.DecimalFormat;
 
 public class StockHttpData
 {
-    private String stockName;
-    private Price price;
+    @SerializedName(value = "symbol")
+    private String symbol;
+    @SerializedName(value = "companyName")
+    private String companyName;
+    @SerializedName(value = "latestPrice")
+    private double price;
+    @SerializedName(value = "change")
+    private double priceChange;
+    @SerializedName(value = "changePercent")
+    private double priceChangePercent;
+    @SerializedName(value = "isUSMarketOpen")
+    private boolean isMarketOpen;
 
-    public StockHttpData(String stockName)
-    {
-        this.stockName = stockName;
+    public StockHttpData() {
     }
 
-    public String getStockName()
-    {
-        return stockName;
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public String getCompanyName() {
+        return companyName;
     }
 
     public String getCurrentPrice() {
-        return new DecimalFormat("##.#").format(price.current);
+        return new DecimalFormat("##.#").format(price);
     }
 
-    public void setCurrentPrice(double c) {
-        this.price.current = c;
+    public String getFormattedPriceChange() {
+        if (priceChange > 0) {
+            return String.format("+%.2f (%.2f%%)", priceChange, Math.abs(priceChangePercent) * 100);
+        } else {
+            return String.format("%.2f (%.2f%%)", priceChange, Math.abs(priceChangePercent) * 100);
+        }
     }
 
-    public void setPrice(Price price) {
+    public String getPriceChangePercent() {
+        return priceChangePercent * 100 + "";
+    }
+
+    public boolean isMarketOpen() {
+        return isMarketOpen;
+    }
+
+    public void setCurrentPrice(double price) {
         this.price = price;
-    }
-
-    public static class Price {
-        @SerializedName(value = "c")
-        private double current;
-        @SerializedName(value = "h")
-        private double high;
-        @SerializedName(value = "l")
-        private double low;
-        @SerializedName(value = "o")
-        private double open;
-        @SerializedName(value = "pc")
-        private double previousClose;
-        @SerializedName(value = "t")
-        private double time;
-        @SerializedName(value = "d")
-        private double d;
-        @SerializedName(value = "dp")
-        private double dp;
     }
 }

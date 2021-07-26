@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.google.gson.GsonBuilder;
 import com.holdbetter.stonks.databinding.StocksListFragmentBinding;
@@ -44,16 +45,18 @@ public class StocksListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         StocksListFragmentBinding binding = StocksListFragmentBinding.inflate(inflater, container, false);
         StocksRecyclerAdapter adapter = new StocksRecyclerAdapter();
+        ((SimpleItemAnimator) binding.stocksRecycler.getItemAnimator()).setSupportsChangeAnimations(false);
         binding.stocksRecycler.setAdapter(adapter);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
         dividerItemDecoration.setDrawable(ContextCompat.getDrawable(getContext(), R.drawable.divider_stock_list));
         binding.stocksRecycler.addItemDecoration(dividerItemDecoration);
 
+
         WebSocketFactory factory = new WebSocketFactory();
 
         try {
-            socket = factory.createSocket("wss://ws.finnhub.io?token=c3pg96iad3ifkq8gs3sg", 3000);
+            socket = factory.createSocket(Credentials.GET_SOCKET_URL, 3000);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -74,10 +77,10 @@ public class StocksListFragment extends Fragment {
                 .subscribe(s -> Log.d("Socket", String.format("Obs2 Working on: %s%n", Thread.currentThread().getName())));
 
         Disposable subscribe2 = subject.flatMap(t -> Observable.just(new GsonBuilder()
-                .registerTypeAdapter(TreeSet.class, new SocketMessageDeserializer())
-                .create()
-                .fromJson(t, TreeSet.class)))
-                .filter(obj -> obj != null)
+                    .registerTypeAdapter(TreeSet.class, new SocketMessageDeserializer())
+                    .create()
+                    .fromJson(t, TreeSet.class)))
+                .filter(treeSet -> !treeSet.isEmpty())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext(StocksRepository.getInstance()::printSocketMessage)
                 .subscribe(adapter::setStocksChanged, Throwable::printStackTrace);

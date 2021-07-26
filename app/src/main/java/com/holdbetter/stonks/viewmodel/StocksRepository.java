@@ -56,7 +56,7 @@ public class StocksRepository {
     }
 
     private void sendMessageToSubscribe(WebSocket s, StockHttpData httpData) {
-        s.sendText(new WebSocketMessageToSubscribe(httpData.getStockName()).toJson());
+        s.sendText(new WebSocketMessageToSubscribe(httpData.getSymbol()).toJson());
     }
 
     public void printSocketMessage(TreeSet<StockSocketData> stocks) {
@@ -67,7 +67,7 @@ public class StocksRepository {
 
     public Single<List<StockHttpData>> getSymbolsPrice(List<String> symbols) {
         return Observable.fromIterable(symbols)
-                .flatMap(symbol -> Observable.just(getSymbolPrice(symbol)))
+                .flatMap(symbol -> Observable.just(getSymbolInfo(symbol)))
                 .toList()
                 .subscribeOn(Schedulers.io());
     }
@@ -90,7 +90,7 @@ public class StocksRepository {
         return new Gson().fromJson(answerJson, Indice.class);
     }
 
-    private StockHttpData getSymbolPrice(String symbol) {
+    private StockHttpData getSymbolInfo(String symbol) {
         String answerJson = null;
         try {
             answerJson = IOUtils.toString(Credentials.getSymbolPriceURL(symbol), StandardCharsets.UTF_8);
@@ -98,9 +98,6 @@ public class StocksRepository {
             e.printStackTrace();
         }
 
-        StockHttpData.Price symbolPrice = new Gson().fromJson(answerJson, StockHttpData.Price.class);
-        StockHttpData symbolData = new StockHttpData(symbol);
-        symbolData.setPrice(symbolPrice);
-        return symbolData;
+        return new Gson().fromJson(answerJson, StockHttpData.class);
     }
 }
