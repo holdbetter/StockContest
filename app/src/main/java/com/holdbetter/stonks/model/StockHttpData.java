@@ -1,5 +1,7 @@
 package com.holdbetter.stonks.model;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.text.DecimalFormat;
 
 public class StockHttpData
@@ -18,11 +20,11 @@ public class StockHttpData
     }
 
     public String getCurrentPrice() {
-        return new DecimalFormat("##.#").format(price.c);
+        return new DecimalFormat("##.#").format(price.current);
     }
 
     public void setCurrentPrice(double c) {
-        this.price.c = c;
+        this.price.current = c;
     }
 
     public void setPrice(Price price) {
@@ -30,11 +32,21 @@ public class StockHttpData
     }
 
     public static class Price {
-        private double c;
-        private double h;
-        private double l;
-        private double o;
-        private double pc;
-        private double t;
+        @SerializedName(value = "c")
+        private double current;
+        @SerializedName(value = "h")
+        private double high;
+        @SerializedName(value = "l")
+        private double low;
+        @SerializedName(value = "o")
+        private double open;
+        @SerializedName(value = "pc")
+        private double previousClose;
+        @SerializedName(value = "t")
+        private double time;
+        @SerializedName(value = "d")
+        private double d;
+        @SerializedName(value = "dp")
+        private double dp;
     }
 }

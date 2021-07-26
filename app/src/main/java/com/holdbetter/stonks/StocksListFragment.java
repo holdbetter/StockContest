@@ -8,8 +8,10 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.gson.GsonBuilder;
@@ -43,7 +45,10 @@ public class StocksListFragment extends Fragment {
         StocksListFragmentBinding binding = StocksListFragmentBinding.inflate(inflater, container, false);
         StocksRecyclerAdapter adapter = new StocksRecyclerAdapter();
         binding.stocksRecycler.setAdapter(adapter);
-        binding.stocksRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
+        dividerItemDecoration.setDrawable(ContextCompat.getDrawable(getContext(), R.drawable.divider_stock_list));
+        binding.stocksRecycler.addItemDecoration(dividerItemDecoration);
 
         WebSocketFactory factory = new WebSocketFactory();
 

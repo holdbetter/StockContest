@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="listPrimaryTextSize" format="dimension"/>
+    <attr name="listSecondaryTextSize" format="dimension"/>
+    <attr name="listPrimaryFontFamily" format="reference"/>
+    <attr name="listSecondaryFontFamily" format="reference"/>
+    <attr name="listSpaceBetweenItems" format="dimension"/>
+</resources>

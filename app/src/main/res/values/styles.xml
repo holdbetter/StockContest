@@ -1,6 +1,6 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">
             @color/colorPrimary
@@ -11,6 +11,40 @@
         <item name="colorAccent">
             @color/colorAccent
         </item>
+
+        <item name="listPreferredItemHeight">
+            68dp
+        </item>
+
+        <item name="colorSecondary">
+            @color/colorPrimaryDark
+        </item>
+
+        <item name="fontFamily">
+            @font/montserrat
+        </item>
+
+        <item name="android:statusBarColor">@color/colorPrimary</item>
+        <item name="android:windowLightStatusBar">true</item>
+
+        <item name="listPrimaryTextSize">18sp</item>
+        <item name="listPrimaryFontFamily">@font/montserrat_bold</item>
+        <item name="listSecondaryTextSize">12sp</item>
+        <item name="listSecondaryFontFamily">@font/montserrat_semi_bold</item>
+        <item name="listSpaceBetweenItems">8dp</item>
     </style>
 
+    <style name="TextViewPrimary">
+        <item name="android:textSize">?listPrimaryTextSize</item>
+        <item name="fontFamily">?listPrimaryFontFamily</item>
+        <item name="lineHeight">24dp</item>
+        <item name="android:textColor">#1A1A1A</item>
+    </style>
+
+    <style name="TextViewSecondary">
+        <item name="android:textSize">?listSecondaryTextSize</item>
+        <item name="fontFamily">?listSecondaryFontFamily</item>
+        <item name="lineHeight">16dp</item>
+        <item name="android:textColor">#575757</item>
+    </style>
 </resources>

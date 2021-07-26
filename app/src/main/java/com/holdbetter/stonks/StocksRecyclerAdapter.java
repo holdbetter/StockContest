@@ -1,13 +1,19 @@
 package com.holdbetter.stonks;
 
+import android.content.res.TypedArray;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.holdbetter.stonks.databinding.StockListInstanceBinding;
 import com.holdbetter.stonks.model.StockHttpData;
 import com.holdbetter.stonks.model.StockSocketData;
@@ -18,8 +24,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
-
-import io.reactivex.rxjava3.core.Observable;
 
 public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAdapter.StocksViewHolder>
 {
@@ -38,7 +42,38 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
     public void onBindViewHolder(@NonNull @NotNull StocksRecyclerAdapter.StocksViewHolder holder, int position)
     {
         holder.stockNameView.setText(stocks.get(position).getStockName());
-        holder.price.setText(String.format("%s", stocks.get(position).getCurrentPrice()));
+        holder.symbolPrice.setText(String.format("$%s", stocks.get(position).getCurrentPrice()));
+
+        // set background type
+        if (position % 2 == 0) {
+            holder.root.setBackground(ContextCompat.getDrawable(holder.root.getContext(), R.drawable.symbol_instance_shape_even));
+        } else {
+            holder.root.setBackground(ContextCompat.getDrawable(holder.root.getContext(), R.drawable.symbol_instance_shape_odd));
+        }
+
+        // set margin for first and last item
+        setMarginToRoot(holder, position);
+
+        // set image
+//        Glide.with(holder.symbolImage)
+//                .load()
+    }
+
+    private void setMarginToRoot(@NotNull StocksViewHolder holder, int position) {
+        if (position == 0) {
+            if (holder.root.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) holder.root.getLayoutParams();
+
+                TypedValue typedValue = new TypedValue();
+                int[] margin = new int[]{R.attr.listSpaceBetweenItems};
+                int indexOfAttrTextSize = 0;
+                TypedArray a = holder.root.getContext().obtainStyledAttributes(typedValue.data, margin);
+                float marginSizeInDp = a.getDimension(indexOfAttrTextSize, -1);
+                a.recycle();
+
+                params.setMargins(0, (int) marginSizeInDp, 0, 0);
+            }
+        }
     }
 
     @Override
@@ -86,14 +121,18 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
 
     public static class StocksViewHolder extends RecyclerView.ViewHolder {
         private final TextView stockNameView;
-        private final TextView price;
+        private final TextView symbolPrice;
+        private final ImageView symbolImage;
+        private final ConstraintLayout root;
 
         public StocksViewHolder(@NonNull @NotNull StockListInstanceBinding binding)
         {
             super(binding.getRoot());
 
-            stockNameView = binding.stockNameView;
-            price = binding.stockPrice;
+            root = binding.getRoot();
+            stockNameView = binding.stockName;
+            symbolPrice = binding.stockPrice;
+            symbolImage = binding.symbolImage;
         }
     }
 }

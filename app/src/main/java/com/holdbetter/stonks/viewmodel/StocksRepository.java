@@ -40,9 +40,10 @@ public class StocksRepository {
     public Single<WebSocket> subscribeToSymbols(WebSocket socket,
                                                        PublishSubject<String> subject,
                                                        List<StockHttpData> symbols) {
+
         return Single.fromCallable(socket::connect)
                 .subscribeOn(Schedulers.io())
-                .map(s -> s.addListener(new WebSocketAdapter() {
+                .map(s -> s.addListener(new WebSocketAdapter()  {
                     @Override
                     public void onTextMessage(WebSocket websocket, String text) {
                         subject.onNext(text);
