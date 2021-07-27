@@ -7,6 +7,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:listitem="@layout/stock_list_instance"
     tools:itemCount="12"
+    android:paddingTop="16dp"
+    android:paddingBottom="8dp"
+    android:clipToPadding="false"
     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
     >
 

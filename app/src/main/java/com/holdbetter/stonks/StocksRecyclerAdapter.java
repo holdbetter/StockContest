@@ -29,7 +29,19 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
     @Override
     public StocksViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View stockItem = LayoutInflater.from(parent.getContext()).inflate(R.layout.stock_list_instance, parent, false);
-        return new StocksViewHolder(StockListInstanceBinding.bind(stockItem));
+        StockListInstanceBinding binding = StockListInstanceBinding.bind(stockItem);
+        View root = binding.getRoot();
+
+        switch (ViewType.values()[viewType]) {
+            case EVEN:
+                root.setBackground(ContextCompat.getDrawable(root.getContext(), R.drawable.symbol_instance_shape_even));
+                break;
+            case ODD:
+                root.setBackground(ContextCompat.getDrawable(root.getContext(), R.drawable.symbol_instance_shape_odd));
+                break;
+        }
+
+        return new StocksViewHolder(binding);
     }
 
     @Override
@@ -48,13 +60,6 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
             holder.stockPriceChange.setTextColor(ContextCompat.getColor(holder.stockPriceChange.getContext(), R.color.colorPrimaryDark));
         }
 
-        // set background type
-        if (position % 2 == 0) {
-            holder.root.setBackground(ContextCompat.getDrawable(holder.root.getContext(), R.drawable.symbol_instance_shape_even));
-        } else {
-            holder.root.setBackground(ContextCompat.getDrawable(holder.root.getContext(), R.drawable.symbol_instance_shape_odd));
-        }
-
         // set image
 //        Glide.with(holder.symbolImage)
 //                .load()
@@ -63,6 +68,11 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
     @Override
     public long getItemId(int position) {
         return stocks.get(position).getSymbol().hashCode();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position % 2 == 0 ? ViewType.EVEN.ordinal() : ViewType.ODD.ordinal();
     }
 
     @Override
@@ -121,5 +131,10 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
             companyName = binding.companyName;
             stockPriceChange = binding.stockPriceChange;
         }
+    }
+
+    private enum ViewType {
+        EVEN,
+        ODD
     }
 }
