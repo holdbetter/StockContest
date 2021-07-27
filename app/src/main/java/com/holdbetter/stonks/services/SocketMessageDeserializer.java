@@ -10,11 +10,7 @@ import com.holdbetter.stonks.model.StockSocketData;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -48,7 +44,7 @@ public class SocketMessageDeserializer implements JsonDeserializer<SortedSet<Sto
             case "trade":
                 Gson gson = new Gson();
                 JsonArray tradesArray = root.getAsJsonArray("data");
-                TreeSet<StockSocketData> stockSocketSet = new TreeSet<>((s1, s2) -> s1.getS().compareTo(s2.getS()));
+                TreeSet<StockSocketData> stockSocketSet = new TreeSet<>((s1, s2) -> s1.getSymbol().compareTo(s2.getSymbol()));
                 for (int i = tradesArray.size() - 1; i >= 0; i--) {
                     stockSocketSet.add(gson.fromJson(tradesArray.get(i), StockSocketData.class));
                 }

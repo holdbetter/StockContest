@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.text.DecimalFormat;
 
-public class StockHttpData
+public class StockData
 {
     @SerializedName(value = "symbol")
     private String symbol;
@@ -18,8 +18,10 @@ public class StockHttpData
     private double priceChangePercent;
     @SerializedName(value = "isUSMarketOpen")
     private boolean isMarketOpen;
+    @SerializedName(value = "previousClose")
+    private double previousClose;
 
-    public StockHttpData() {
+    public StockData() {
     }
 
     public String getSymbol() {
@@ -31,7 +33,7 @@ public class StockHttpData
     }
 
     public String getCurrentPrice() {
-        return new DecimalFormat("##.#").format(price);
+        return String.format("%.2f", price);
     }
 
     public String getFormattedPriceChange() {
@@ -50,7 +52,13 @@ public class StockHttpData
         return isMarketOpen;
     }
 
-    public void setCurrentPrice(double price) {
+    public void updatePrices(double price) {
         this.price = price;
+        this.priceChange = price - previousClose;
+        this.priceChangePercent = priceChange / previousClose;
+    }
+
+    public void setPriceChange(double priceChange) {
+        this.priceChange = priceChange;
     }
 }

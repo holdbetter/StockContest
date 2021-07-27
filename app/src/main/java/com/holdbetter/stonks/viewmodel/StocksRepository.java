@@ -5,7 +5,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.holdbetter.stonks.Credentials;
 import com.holdbetter.stonks.model.Indice;
-import com.holdbetter.stonks.model.StockHttpData;
+import com.holdbetter.stonks.model.StockData;
 import com.holdbetter.stonks.model.StockSocketData;
 import com.holdbetter.stonks.model.WebSocketMessageToSubscribe;
 import com.neovisionaries.ws.client.WebSocket;
@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -40,7 +39,7 @@ public class StocksRepository {
 
     public Single<WebSocket> subscribeToSymbols(WebSocket socket,
                                                        PublishSubject<String> subject,
-                                                       List<StockHttpData> symbols) {
+                                                       List<StockData> symbols) {
 
         return Single.fromCallable(socket::connect)
                 .subscribeOn(Schedulers.io())
@@ -51,22 +50,22 @@ public class StocksRepository {
                     }
                 }))
                 .doAfterSuccess(s -> {
-                    for (StockHttpData httpData : symbols)
+                    for (StockData httpData : symbols)
                         sendMessageToSubscribe(s, httpData);
                 });
     }
 
-    private void sendMessageToSubscribe(WebSocket s, StockHttpData httpData) {
+    private void sendMessageToSubscribe(WebSocket s, StockData httpData) {
         s.sendText(new WebSocketMessageToSubscribe(httpData.getSymbol()).toJson());
     }
 
     public void printSocketMessage(TreeSet<StockSocketData> stocks) {
         for (StockSocketData s : stocks) {
-            Log.d("SocketMessage", String.format("Symbol: %s  %.2f %d    / thread: %s%n", s.getS(), s.getP(), s.getT(), Thread.currentThread().getName()));
+            Log.d("SocketMessage", String.format("Symbol: %s  %.2f %d    / thread: %s%n", s.getSymbol(), s.getPrice(), s.getTime(), Thread.currentThread().getName()));
         }
     }
 
-    public Single<List<StockHttpData>> getSymbolsPrice(List<String> symbols) {
+    public Single<List<StockData>> getSymbolsPrice(List<String> symbols) {
         return Observable.fromIterable(symbols)
                 .subscribeOn(Schedulers.io())
                 .flatMap(symbol -> Observable.just(getSymbolInfo(symbol)))
@@ -92,7 +91,7 @@ public class StocksRepository {
         return new Gson().fromJson(answerJson, Indice.class);
     }
 
-    private StockHttpData getSymbolInfo(String symbol) {
+    private StockData getSymbolInfo(String symbol) {
         String answerJson = null;
         try {
             answerJson = IOUtils.toString(Credentials.getSymbolPriceURL(symbol), StandardCharsets.UTF_8);
@@ -100,6 +99,6 @@ public class StocksRepository {
             e.printStackTrace();
         }
 
-        return new Gson().fromJson(answerJson, StockHttpData.class);
+        return new Gson().fromJson(answerJson, StockData.class);
     }
 }

@@ -1,32 +1,29 @@
 package com.holdbetter.stonks.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class StockSocketData {
-    private String s;
-    private double p;
-    private long t;
+    @SerializedName(value = "s")
+    private String symbol;
+    @SerializedName(value = "p")
+    private double price;
+    @SerializedName(value = "t")
+    private long time;
 
-    public String getS() {
-        return s;
+    public String getSymbol() {
+        return symbol;
     }
 
-    public void setS(String s) {
-        this.s = s;
+    public double getPrice() {
+        return price;
     }
 
-    public double getP() {
-        return p;
+    public long getTime() {
+        return time;
     }
 
-    public void setP(double p) {
-        this.p = p;
-    }
-
-    public long getT() {
-        return t;
-    }
-
-    public void setT(long t) {
-        this.t = t;
+    public void setTime(long time) {
+        this.time = time;
     }
 }
 

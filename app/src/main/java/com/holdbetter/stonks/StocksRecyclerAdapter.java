@@ -1,7 +1,5 @@
 package com.holdbetter.stonks;
 
-import android.content.res.TypedArray;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +12,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.holdbetter.stonks.databinding.StockListInstanceBinding;
-import com.holdbetter.stonks.model.StockHttpData;
+import com.holdbetter.stonks.model.StockData;
 import com.holdbetter.stonks.model.StockSocketData;
 
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +23,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAdapter.StocksViewHolder> {
-    private List<StockHttpData> stocks;
+    private List<StockData> stocks;
 
     @NonNull
     @Override
@@ -36,7 +34,7 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
 
     @Override
     public void onBindViewHolder(@NonNull StocksRecyclerAdapter.StocksViewHolder holder, int position) {
-        StockHttpData stockData = stocks.get(position);
+        StockData stockData = stocks.get(position);
         holder.stockName.setText(stockData.getSymbol());
         holder.stockPrice.setText(String.format("$%s", stockData.getCurrentPrice()));
         holder.companyName.setText(stockData.getCompanyName());
@@ -72,31 +70,31 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
         return stocks != null ? stocks.size() : 0;
     }
 
-    public void setStocksChanged(TreeSet<StockSocketData> stocksChanged) {
-        ArrayList<StockHttpData> stocksCopy = new ArrayList<>(stocks);
+    public void updateStocks(TreeSet<StockSocketData> stocksChanged) {
+        ArrayList<StockData> stocksCopy = new ArrayList<>(stocks);
         for (StockSocketData stockSocketData : stocksChanged) {
             int index = -1;
-            StockHttpData httpData = null;
-            for (StockHttpData stockHttpData : stocksCopy) {
-                if (stockSocketData.getS().equals(stockHttpData.getSymbol())) {
-                    index = stocks.indexOf(stockHttpData);
-                    httpData = stockHttpData;
+            StockData stockToBeUpdated = null;
+            for (StockData lastStockState : stocksCopy) {
+                if (stockSocketData.getSymbol().equals(lastStockState.getSymbol())) {
+                    index = stocks.indexOf(lastStockState);
+                    stockToBeUpdated = lastStockState;
                     break;
                 }
             }
 
             if (index != -1) {
-                //updatePrice
-                httpData.setCurrentPrice(stockSocketData.getP());
-                //notify
+                // updatePrice
+                stockToBeUpdated.updatePrices(stockSocketData.getPrice());
+                // notify
                 notifyItemChanged(index);
-                //delete from copy
-                stocksCopy.remove(httpData);
+                // delete from copy
+                stocksCopy.remove(stockToBeUpdated);
             }
         }
     }
 
-    public void setStocks(@Nullable List<StockHttpData> stocks) {
+    public void setStocks(@Nullable List<StockData> stocks) {
         if (stocks != null) {
             this.stocks = stocks;
         } else {

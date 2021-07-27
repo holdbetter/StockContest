@@ -2,15 +2,15 @@ package com.holdbetter.stonks.viewmodel;
 
 import androidx.lifecycle.ViewModel;
 
-import com.holdbetter.stonks.model.StockHttpData;
+import com.holdbetter.stonks.model.StockData;
 
 import java.util.List;
 
 public class StocksViewModel extends ViewModel {
-    private List<StockHttpData> httpData;
+    private List<StockData> httpData;
     private List<String> dowJonesCostituents;
 
-    public List<StockHttpData> getHttpStocksData() {
+    public List<StockData> getHttpStocksData() {
         return httpData;
     }
 
@@ -18,7 +18,7 @@ public class StocksViewModel extends ViewModel {
         return dowJonesCostituents;
     }
 
-    public void setHttpData(List<StockHttpData> httpData) {
+    public void setHttpData(List<StockData> httpData) {
         this.httpData = httpData;
     }
 

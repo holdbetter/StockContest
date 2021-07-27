@@ -81,9 +81,10 @@ public class StocksListFragment extends Fragment {
                     .create()
                     .fromJson(t, TreeSet.class)))
                 .filter(treeSet -> !treeSet.isEmpty())
-                .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext(StocksRepository.getInstance()::printSocketMessage)
-                .subscribe(adapter::setStocksChanged, Throwable::printStackTrace);
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(adapter::updateStocks, Throwable::printStackTrace);
 
         return binding.getRoot();
     }
