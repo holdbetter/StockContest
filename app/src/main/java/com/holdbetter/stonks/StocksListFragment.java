@@ -66,7 +66,7 @@ public class StocksListFragment extends Fragment {
         StocksViewModel stocksViewModel = new ViewModelProvider(requireActivity()).get(StocksViewModel.class);
         subscribe1 = StocksRepository.getInstance().getDowJonesConstituents()
                 .doOnSuccess(stocksViewModel::setDowJonesSymbols)
-                .flatMap(StocksRepository.getInstance()::getSymbolsPrice)
+                .flatMap(StocksRepository.getInstance()::getStocksData)
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSuccess(httpData -> {
                     stocksViewModel.setHttpData(httpData);
@@ -77,9 +77,9 @@ public class StocksListFragment extends Fragment {
                 .subscribe(s -> Log.d("Socket", String.format("Obs2 Working on: %s%n", Thread.currentThread().getName())));
 
         Disposable subscribe2 = subject.flatMap(t -> Observable.just(new GsonBuilder()
-                    .registerTypeAdapter(TreeSet.class, new SocketMessageDeserializer())
-                    .create()
-                    .fromJson(t, TreeSet.class)))
+                .registerTypeAdapter(TreeSet.class, new SocketMessageDeserializer())
+                .create()
+                .fromJson(t, TreeSet.class)))
                 .filter(treeSet -> !treeSet.isEmpty())
                 .doOnNext(StocksRepository.getInstance()::printSocketMessage)
                 .subscribeOn(Schedulers.io())

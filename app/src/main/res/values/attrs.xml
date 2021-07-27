@@ -5,4 +5,5 @@
     <attr name="listPrimaryFontFamily" format="reference"/>
     <attr name="listSecondaryFontFamily" format="reference"/>
     <attr name="listSpaceBetweenItems" format="dimension"/>
+    <attr name="imageCornerRadius" format="dimension"/>
 </resources>

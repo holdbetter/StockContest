@@ -1,5 +1,7 @@
 package com.holdbetter.stonks;
 
+import android.content.res.TypedArray;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,13 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.FitCenter;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.bumptech.glide.request.RequestOptions;
 import com.holdbetter.stonks.databinding.StockListInstanceBinding;
 import com.holdbetter.stonks.model.StockData;
 import com.holdbetter.stonks.model.StockSocketData;
@@ -61,8 +70,22 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
         }
 
         // set image
-//        Glide.with(holder.symbolImage)
-//                .load()
+        TypedValue typedValue = new TypedValue();
+        int[] margin = new int[]{R.attr.imageCornerRadius};
+        int indexOfAttrTextSize = 0;
+        TypedArray a = holder.root.getContext().obtainStyledAttributes(typedValue.data, margin);
+        float marginSizeInDp = a.getDimension(indexOfAttrTextSize, -1);
+        a.recycle();
+
+        RequestOptions options = new RequestOptions()
+                .transform(new FitCenter(), new RoundedCorners((int) marginSizeInDp))
+                .diskCacheStrategy(DiskCacheStrategy.ALL);
+
+        Glide.with(holder.symbolImage)
+                .load(stockData.getUrl())
+                .apply(options)
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .into(holder.symbolImage);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.holdbetter.stonks.model;
 
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.text.DecimalFormat;
@@ -20,6 +21,8 @@ public class StockData
     private boolean isMarketOpen;
     @SerializedName(value = "previousClose")
     private double previousClose;
+    @Expose
+    private String url;
 
     public StockData() {
     }
@@ -44,6 +47,10 @@ public class StockData
         }
     }
 
+    public String getUrl() {
+        return url;
+    }
+
     public String getPriceChangePercent() {
         return priceChangePercent * 100 + "";
     }
@@ -60,5 +67,9 @@ public class StockData
 
     public void setPriceChange(double priceChange) {
         this.priceChange = priceChange;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

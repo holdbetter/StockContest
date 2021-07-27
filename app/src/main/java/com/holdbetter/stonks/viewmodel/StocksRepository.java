@@ -3,6 +3,8 @@ package com.holdbetter.stonks.viewmodel;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.internal.GsonBuildConfig;
 import com.holdbetter.stonks.Credentials;
 import com.holdbetter.stonks.model.Indice;
 import com.holdbetter.stonks.model.StockData;
@@ -38,12 +40,12 @@ public class StocksRepository {
     }
 
     public Single<WebSocket> subscribeToSymbols(WebSocket socket,
-                                                       PublishSubject<String> subject,
-                                                       List<StockData> symbols) {
+                                                PublishSubject<String> subject,
+                                                List<StockData> symbols) {
 
         return Single.fromCallable(socket::connect)
                 .subscribeOn(Schedulers.io())
-                .map(s -> s.addListener(new WebSocketAdapter()  {
+                .map(s -> s.addListener(new WebSocketAdapter() {
                     @Override
                     public void onTextMessage(WebSocket websocket, String text) {
                         subject.onNext(text);
@@ -65,10 +67,10 @@ public class StocksRepository {
         }
     }
 
-    public Single<List<StockData>> getSymbolsPrice(List<String> symbols) {
+    public Single<List<StockData>> getStocksData(List<String> symbols) {
         return Observable.fromIterable(symbols)
                 .subscribeOn(Schedulers.io())
-                .flatMap(symbol -> Observable.just(getSymbolInfo(symbol)))
+                .flatMap(symbol -> Observable.just(getStockInfo(symbol)))
                 .observeOn(Schedulers.computation())
                 .toSortedList((s1, s2) -> s1.getSymbol().compareTo(s2.getSymbol()));
     }
@@ -91,7 +93,7 @@ public class StocksRepository {
         return new Gson().fromJson(answerJson, Indice.class);
     }
 
-    private StockData getSymbolInfo(String symbol) {
+    private StockData getStockInfo(String symbol) {
         String answerJson = null;
         try {
             answerJson = IOUtils.toString(Credentials.getSymbolPriceURL(symbol), StandardCharsets.UTF_8);
@@ -99,6 +101,22 @@ public class StocksRepository {
             e.printStackTrace();
         }
 
-        return new Gson().fromJson(answerJson, StockData.class);
+        return appendLogoInfo(new Gson().fromJson(answerJson, StockData.class));
+    }
+
+    private StockData appendLogoInfo(StockData stockData) {
+        String answerJson = null;
+        try {
+            answerJson = IOUtils.toString(Credentials.getSymbolLogoURL(stockData.getSymbol()), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        stockData.setUrl(new Gson().fromJson(answerJson, LogoUrl.class).url);
+        return stockData;
+    }
+
+    private static class LogoUrl {
+        String url;
     }
 }
