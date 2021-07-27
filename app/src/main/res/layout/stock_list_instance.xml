@@ -51,13 +51,12 @@
             style="@style/TextViewSecondary"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
             app:layout_constraintLeft_toLeftOf="@id/stockName"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/stockName"
-            tools:text="Super puper long name"
-            android:ellipsize="marquee"
-            android:maxLines="1"
-            />
+            tools:text="Super puper long name" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -85,7 +84,6 @@
             style="@style/TextViewSecondary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="+$75 (112,14%)"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/stockPrice"
             tools:text="+$75 (112,14%)" />

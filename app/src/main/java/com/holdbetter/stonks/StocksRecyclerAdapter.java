@@ -24,22 +24,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
-public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAdapter.StocksViewHolder>
-{
+public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAdapter.StocksViewHolder> {
     private List<StockHttpData> stocks;
 
     @NonNull
-    @NotNull
     @Override
-    public StocksViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType)
-    {
+    public StocksViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View stockItem = LayoutInflater.from(parent.getContext()).inflate(R.layout.stock_list_instance, parent, false);
         return new StocksViewHolder(StockListInstanceBinding.bind(stockItem));
     }
 
     @Override
-    public void onBindViewHolder(@NonNull @NotNull StocksRecyclerAdapter.StocksViewHolder holder, int position)
-    {
+    public void onBindViewHolder(@NonNull StocksRecyclerAdapter.StocksViewHolder holder, int position) {
         StockHttpData stockData = stocks.get(position);
         holder.stockName.setText(stockData.getSymbol());
         holder.stockPrice.setText(String.format("$%s", stockData.getCurrentPrice()));
@@ -61,39 +57,22 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
             holder.root.setBackground(ContextCompat.getDrawable(holder.root.getContext(), R.drawable.symbol_instance_shape_odd));
         }
 
-        // set margin for first and last item
-        setMarginToRoot(holder, position);
-
         // set image
 //        Glide.with(holder.symbolImage)
 //                .load()
     }
 
-    private void setMarginToRoot(@NotNull StocksViewHolder holder, int position) {
-        if (position == 0) {
-            if (holder.root.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
-                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) holder.root.getLayoutParams();
-
-                TypedValue typedValue = new TypedValue();
-                int[] margin = new int[]{R.attr.listSpaceBetweenItems};
-                int indexOfAttrTextSize = 0;
-                TypedArray a = holder.root.getContext().obtainStyledAttributes(typedValue.data, margin);
-                float marginSizeInDp = a.getDimension(indexOfAttrTextSize, -1);
-                a.recycle();
-
-                params.setMargins(0, (int) marginSizeInDp, 0, 0);
-            }
-        }
+    @Override
+    public long getItemId(int position) {
+        return stocks.get(position).getSymbol().hashCode();
     }
 
     @Override
-    public int getItemCount()
-    {
+    public int getItemCount() {
         return stocks != null ? stocks.size() : 0;
     }
 
-    public void setStocksChanged(TreeSet<StockSocketData> stocksChanged)
-    {
+    public void setStocksChanged(TreeSet<StockSocketData> stocksChanged) {
         ArrayList<StockHttpData> stocksCopy = new ArrayList<>(stocks);
         for (StockSocketData stockSocketData : stocksChanged) {
             int index = -1;
@@ -117,8 +96,7 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
         }
     }
 
-    public void setStocks(@Nullable List<StockHttpData> stocks)
-    {
+    public void setStocks(@Nullable List<StockHttpData> stocks) {
         if (stocks != null) {
             this.stocks = stocks;
         } else {
@@ -135,8 +113,7 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
         private final ImageView symbolImage;
         private final ConstraintLayout root;
 
-        public StocksViewHolder(@NonNull @NotNull StockListInstanceBinding binding)
-        {
+        public StocksViewHolder(@NonNull @NotNull StockListInstanceBinding binding) {
             super(binding.getRoot());
 
             root = binding.getRoot();

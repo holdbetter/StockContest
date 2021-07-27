@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -67,9 +68,10 @@ public class StocksRepository {
 
     public Single<List<StockHttpData>> getSymbolsPrice(List<String> symbols) {
         return Observable.fromIterable(symbols)
+                .subscribeOn(Schedulers.io())
                 .flatMap(symbol -> Observable.just(getSymbolInfo(symbol)))
-                .toList()
-                .subscribeOn(Schedulers.io());
+                .observeOn(Schedulers.computation())
+                .toSortedList((s1, s2) -> s1.getSymbol().compareTo(s2.getSymbol()));
     }
 
     public Single<List<String>> getDowJonesConstituents() {

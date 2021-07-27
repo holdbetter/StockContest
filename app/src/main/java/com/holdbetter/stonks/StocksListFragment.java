@@ -12,7 +12,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.google.gson.GsonBuilder;
@@ -45,6 +44,7 @@ public class StocksListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         StocksListFragmentBinding binding = StocksListFragmentBinding.inflate(inflater, container, false);
         StocksRecyclerAdapter adapter = new StocksRecyclerAdapter();
+        adapter.setHasStableIds(true);
         ((SimpleItemAnimator) binding.stocksRecycler.getItemAnimator()).setSupportsChangeAnimations(false);
         binding.stocksRecycler.setAdapter(adapter);
 
