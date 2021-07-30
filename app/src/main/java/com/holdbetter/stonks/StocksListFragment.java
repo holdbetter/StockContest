@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator;
 import com.google.gson.GsonBuilder;
 import com.holdbetter.stonks.databinding.StocksListFragmentBinding;
 import com.holdbetter.stonks.services.SocketMessageDeserializer;
+import com.holdbetter.stonks.utility.ConstituentsCache;
 import com.holdbetter.stonks.viewmodel.StocksRepository;
 import com.holdbetter.stonks.viewmodel.StocksViewModel;
 import com.neovisionaries.ws.client.WebSocket;
@@ -64,8 +65,8 @@ public class StocksListFragment extends Fragment {
         PublishSubject<String> subject = PublishSubject.create();
 
         StocksViewModel stocksViewModel = new ViewModelProvider(requireActivity()).get(StocksViewModel.class);
-        subscribe1 = StocksRepository.getInstance().getDowJonesConstituents()
-                .doOnSuccess(stocksViewModel::setDowJonesSymbols)
+        subscribe1 = StocksRepository.getInstance()
+                .getDowJonesIndice(stocksViewModel, getContext().getCacheDir())
                 .flatMap(StocksRepository.getInstance()::getStocksData)
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSuccess(httpData -> {

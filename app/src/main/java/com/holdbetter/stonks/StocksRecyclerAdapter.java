@@ -78,7 +78,7 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
         a.recycle();
 
         RequestOptions options = new RequestOptions()
-                .transform(new FitCenter(), new RoundedCorners((int) marginSizeInDp))
+                .transform(new CenterCrop(), new RoundedCorners((int) marginSizeInDp))
                 .diskCacheStrategy(DiskCacheStrategy.ALL);
 
         Glide.with(holder.symbolImage)
