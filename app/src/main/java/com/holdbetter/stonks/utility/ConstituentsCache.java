@@ -41,12 +41,12 @@ public class ConstituentsCache extends BaseCaching<Indice> {
         Log.d("INDICE_CACHING", Thread.currentThread().getName());
 
         // exchange walmart (logo not accesible) for yandex
-//        for (int i = 0; i < freshIndiceData.getConstituents().length; i++) {
-//            if (freshIndiceData.getConstituents()[i].equals("WMT")) {
-//                freshIndiceData.getConstituents()[i] = "YNDX";
-//                break;
-//            }
-//        }
+        for (int i = 0; i < freshIndiceData.getConstituents().length; i++) {
+            if (freshIndiceData.getConstituents()[i].equals("WMT")) {
+                freshIndiceData.getConstituents()[i] = "YNDX";
+                break;
+            }
+        }
 
         // cache in ViewModel
         viewModel.setDowJonesIndice(freshIndiceData);
