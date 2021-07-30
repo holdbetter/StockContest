@@ -20,7 +20,7 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 
-public class ConstituentsCache implements Caching<Indice> {
+public class ConstituentsCache extends BaseCaching<Indice> {
     private static final String cacheFileName = "constituents.txt";
     private static ConstituentsCache instance = null;
 
@@ -64,7 +64,8 @@ public class ConstituentsCache implements Caching<Indice> {
         }
     }
 
-    private void writeDataInCacheFile(File cache, Indice indice) {
+    @Override
+    void writeDataInCacheFile(File cache, Indice indice) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(cache, false))) {
             writer.write(new Gson().toJson(indice, Indice.class));
         } catch (IOException e) {
@@ -72,7 +73,8 @@ public class ConstituentsCache implements Caching<Indice> {
         }
     }
 
-    private Indice readDataInCacheFile(File cache) {
+    @Override
+    Indice readDataInCacheFile(File cache) {
         BufferedReader reader = null;
         Indice indice = null;
         try {
@@ -91,6 +93,7 @@ public class ConstituentsCache implements Caching<Indice> {
         return indice;
     }
 
+    @Override
     public Observable<Indice> getMemoryCache(StocksViewModel stocksViewModel) {
         return Observable.create(emitter -> {
             if (stocksViewModel.getDowJones() != null) {
@@ -100,6 +103,7 @@ public class ConstituentsCache implements Caching<Indice> {
         });
     }
 
+    @Override
     public Observable<Indice> getDiskCache(File cacheFolder) {
         return Observable.create(emitter -> {
             Log.d("DISK_READING", Thread.currentThread().getName());

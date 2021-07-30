@@ -34,6 +34,8 @@ public class StocksRepository {
 
     private static StocksRepository instance;
 
+    private StocksRepository() {}
+
     public static StocksRepository getInstance() {
         if (instance == null) {
             instance = new StocksRepository();
