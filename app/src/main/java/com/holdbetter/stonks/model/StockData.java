@@ -41,9 +41,9 @@ public class StockData
 
     public String getFormattedPriceChange() {
         if (priceChange > 0) {
-            return String.format("+%.2f (%.2f%%)", priceChange, Math.abs(priceChangePercent) * 100);
+            return String.format("+%.2f (%.2f%%)", priceChange, getPriceChangePercent());
         } else {
-            return String.format("%.2f (%.2f%%)", priceChange, Math.abs(priceChangePercent) * 100);
+            return String.format("%.2f (%.2f%%)", priceChange, getPriceChangePercent());
         }
     }
 
@@ -51,8 +51,8 @@ public class StockData
         return url;
     }
 
-    public String getPriceChangePercent() {
-        return priceChangePercent * 100 + "";
+    public double getPriceChangePercent() {
+        return Math.abs(priceChangePercent) * 100;
     }
 
     public boolean isMarketOpen() {

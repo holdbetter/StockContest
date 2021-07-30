@@ -17,12 +17,14 @@ import androidx.recyclerview.widget.SimpleItemAnimator;
 import com.google.gson.GsonBuilder;
 import com.holdbetter.stonks.databinding.StocksListFragmentBinding;
 import com.holdbetter.stonks.services.SocketMessageDeserializer;
-import com.holdbetter.stonks.utility.ConstituentsCache;
 import com.holdbetter.stonks.viewmodel.StocksRepository;
 import com.holdbetter.stonks.viewmodel.StocksViewModel;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketFactory;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.TreeSet;
 
@@ -44,14 +46,7 @@ public class StocksListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         StocksListFragmentBinding binding = StocksListFragmentBinding.inflate(inflater, container, false);
-        StocksRecyclerAdapter adapter = new StocksRecyclerAdapter();
-        adapter.setHasStableIds(true);
-        ((SimpleItemAnimator) binding.stocksRecycler.getItemAnimator()).setSupportsChangeAnimations(false);
-        binding.stocksRecycler.setAdapter(adapter);
-
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
-        dividerItemDecoration.setDrawable(ContextCompat.getDrawable(getContext(), R.drawable.divider_stock_list));
-        binding.stocksRecycler.addItemDecoration(dividerItemDecoration);
+        StocksRecyclerAdapter adapter = createAdapter(binding);
 
 
         WebSocketFactory factory = new WebSocketFactory();
@@ -65,12 +60,13 @@ public class StocksListFragment extends Fragment {
         PublishSubject<String> subject = PublishSubject.create();
 
         StocksViewModel stocksViewModel = new ViewModelProvider(requireActivity()).get(StocksViewModel.class);
+        File cacheDir = getContext().getCacheDir();
         subscribe1 = StocksRepository.getInstance()
-                .getDowJonesIndice(stocksViewModel, getContext().getCacheDir())
-                .flatMap(StocksRepository.getInstance()::getStocksData)
+                .getDowJonesIndice(stocksViewModel, cacheDir)
+                .flatMap(indice -> StocksRepository.getInstance().getStocksData(stocksViewModel, cacheDir, indice))
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSuccess(httpData -> {
-                    stocksViewModel.setHttpData(httpData);
+                    stocksViewModel.setStockData(httpData);
                     adapter.setStocks(httpData);
                 })
                 .observeOn(Schedulers.io())
@@ -88,6 +84,19 @@ public class StocksListFragment extends Fragment {
                 .subscribe(adapter::updateStocks, Throwable::printStackTrace);
 
         return binding.getRoot();
+    }
+
+    @NotNull
+    private StocksRecyclerAdapter createAdapter(StocksListFragmentBinding binding) {
+        StocksRecyclerAdapter adapter = new StocksRecyclerAdapter();
+        adapter.setHasStableIds(true);
+        ((SimpleItemAnimator) binding.stocksRecycler.getItemAnimator()).setSupportsChangeAnimations(false);
+        binding.stocksRecycler.setAdapter(adapter);
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
+        dividerItemDecoration.setDrawable(ContextCompat.getDrawable(getContext(), R.drawable.divider_stock_list));
+        binding.stocksRecycler.addItemDecoration(dividerItemDecoration);
+        return adapter;
     }
 
     @Override

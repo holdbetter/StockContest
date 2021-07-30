@@ -6,6 +6,8 @@ import com.google.gson.Gson;
 import com.holdbetter.stonks.model.Indice;
 import com.holdbetter.stonks.viewmodel.StocksViewModel;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -36,7 +38,15 @@ public class ConstituentsCache extends BaseCaching<Indice> {
 
     @Override
     public void cache(Indice freshIndiceData, StocksViewModel viewModel, File diskCacheDir) {
-        Log.d("CACHING", Thread.currentThread().getName());
+        Log.d("INDICE_CACHING", Thread.currentThread().getName());
+
+        // exchange walmart (logo not accesible) for yandex
+//        for (int i = 0; i < freshIndiceData.getConstituents().length; i++) {
+//            if (freshIndiceData.getConstituents()[i].equals("WMT")) {
+//                freshIndiceData.getConstituents()[i] = "YNDX";
+//                break;
+//            }
+//        }
 
         // cache in ViewModel
         viewModel.setDowJonesIndice(freshIndiceData);
@@ -58,10 +68,12 @@ public class ConstituentsCache extends BaseCaching<Indice> {
                 if (cache.delete()) {
                     writeDataInCacheFile(cache, freshIndiceData);
                 } else {
-                    Log.d("CACHE_STATE", "Cache wasn't deleted");
+                    Log.d("CACHE_STATE", "Cache (Indice) wasn't deleted and written");
                 }
             }
         }
+
+        Log.d("INDICE_CACHING", "COMPLETE");
     }
 
     @Override
@@ -74,28 +86,21 @@ public class ConstituentsCache extends BaseCaching<Indice> {
     }
 
     @Override
+    @Nullable
     Indice readDataInCacheFile(File cache) {
-        BufferedReader reader = null;
         Indice indice = null;
-        try {
-            reader = new BufferedReader(new FileReader(cache));
+        try (FileReader reader = new FileReader(cache)) {
             indice = new Gson().fromJson(reader, Indice.class);
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                reader.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
-
         return indice;
     }
 
     @Override
     public Observable<Indice> getMemoryCache(StocksViewModel stocksViewModel) {
         return Observable.create(emitter -> {
+            Log.d("INDICE_MEMORY_READING", Thread.currentThread().getName());
             if (stocksViewModel.getDowJones() != null) {
                 emitter.onNext(stocksViewModel.getDowJones());
             }
@@ -106,10 +111,10 @@ public class ConstituentsCache extends BaseCaching<Indice> {
     @Override
     public Observable<Indice> getDiskCache(File cacheFolder) {
         return Observable.create(emitter -> {
-            Log.d("DISK_READING", Thread.currentThread().getName());
+            Log.d("INDICE_DISK_READING", Thread.currentThread().getName());
             File fileCache = new File(cacheFolder, getCacheFileName());
             Indice indice = null;
-            if (fileCache.exists() && ((indice = readDataInCacheFile(fileCache)) != null)) {
+            if (fileCache.exists() && (indice = readDataInCacheFile(fileCache)) != null) {
                 emitter.onNext(indice);
             }
             emitter.onComplete();

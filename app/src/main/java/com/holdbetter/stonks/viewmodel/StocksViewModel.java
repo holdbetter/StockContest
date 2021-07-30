@@ -8,19 +8,19 @@ import com.holdbetter.stonks.model.StockData;
 import java.util.List;
 
 public class StocksViewModel extends ViewModel {
-    private List<StockData> httpData;
+    private List<StockData> stockData;
     private Indice dowJones;
 
-    public List<StockData> getHttpStocksData() {
-        return httpData;
+    public List<StockData> getStockData() {
+        return stockData;
     }
 
     public Indice getDowJones() {
         return dowJones;
     }
 
-    public void setHttpData(List<StockData> httpData) {
-        this.httpData = httpData;
+    public void setStockData(List<StockData> stockData) {
+        this.stockData = stockData;
     }
 
     public void setDowJonesIndice(Indice indice) {

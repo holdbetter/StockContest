@@ -41,8 +41,9 @@ public class Indice {
 
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(lastUpdateTime);
-//        c.roll(Calendar.DAY_OF_YEAR, 1);
-        c.roll(Calendar.SECOND, 10);
+        // cache period
+        c.roll(Calendar.DAY_OF_YEAR, 1);
+//        c.roll(Calendar.SECOND, 10);
         expiresTime = c.getTimeInMillis();
     }
 }

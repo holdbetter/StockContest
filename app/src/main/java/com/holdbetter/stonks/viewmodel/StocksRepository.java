@@ -11,6 +11,7 @@ import com.holdbetter.stonks.model.StockData;
 import com.holdbetter.stonks.model.StockSocketData;
 import com.holdbetter.stonks.model.WebSocketMessageToSubscribe;
 import com.holdbetter.stonks.utility.ConstituentsCache;
+import com.holdbetter.stonks.utility.StockCache;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 
@@ -72,14 +73,6 @@ public class StocksRepository {
         }
     }
 
-    public Single<List<StockData>> getStocksData(Indice indice) {
-        return Observable.fromIterable(Arrays.asList(indice.getConstituents()))
-                .subscribeOn(Schedulers.io())
-                .flatMap(symbol -> Observable.just(getStockInfo(symbol)))
-                .observeOn(Schedulers.computation())
-                .toSortedList((s1, s2) -> s1.getSymbol().compareTo(s2.getSymbol()));
-    }
-
     public Single<Indice> getDowJonesIndice(StocksViewModel stocksViewModel, File diskCache) {
         ConstituentsCache cache = ConstituentsCache.getInstance();
         return Observable.concat(cache.getMemoryCache(stocksViewModel),
@@ -96,7 +89,7 @@ public class StocksRepository {
     }
 
     private Indice getIndiceNames() {
-        Log.d("DATA_LOADING", Thread.currentThread().getName());
+        Log.d("INDICE_LOADING", Thread.currentThread().getName());
         String answerJson = null;
         try {
             answerJson = IOUtils.toString(Credentials.GET_CONSTITUENTS_URL, StandardCharsets.UTF_8);
@@ -108,6 +101,27 @@ public class StocksRepository {
         indice.setLastUpdateTime(Calendar.getInstance().getTimeInMillis());
 
         return indice;
+    }
+
+    public Single<List<StockData>> getStocksData(StocksViewModel stocksViewModel, File diskCache, Indice indice) {
+        StockCache cache = StockCache.getInstance();
+        return Observable.concat(cache.getMemoryCache(stocksViewModel),
+                cache.getDiskCache(diskCache),
+                queryStockData(stocksViewModel, diskCache, indice))
+                .firstElement()
+                .toSingle();
+    }
+
+    private Observable<List<StockData>> queryStockData(StocksViewModel stocksViewModel, File diskCache, Indice indice) {
+        return Observable.fromIterable(Arrays.asList(indice.getConstituents()))
+                .subscribeOn(Schedulers.io())
+                .flatMap(symbol -> Observable.just(getStockInfo(symbol)))
+                .observeOn(Schedulers.computation())
+                .toSortedList((s1, s2) -> s1.getSymbol().compareTo(s2.getSymbol()))
+                .doOnSuccess(s -> Log.d("STOCKS_LOADED", Thread.currentThread().getName()))
+                .observeOn(Schedulers.io())
+                .doAfterSuccess(stockData -> StockCache.getInstance().cache(stockData, stocksViewModel, diskCache))
+                .toObservable();
     }
 
     private StockData getStockInfo(String symbol) {
