@@ -22,19 +22,25 @@ import io.reactivex.rxjava3.core.Observable;
 public class StockCache extends BaseCaching<List<StockData>> {
     private static final String cacheFileName = "stocks.txt";
     private static StockCache instance;
+    private final File cache;
 
-    private StockCache() {
+    private StockCache(File cache) {
+        this.cache = cache;
     }
 
-    public static StockCache getInstance() {
+    public static StockCache getInstance(File cacheDirectory) {
         if (instance == null) {
-            instance = new StockCache();
+            instance = new StockCache(new File(cacheDirectory, cacheFileName));
         }
         return instance;
     }
 
     @Override
-    void writeDataInCacheFile(File cache, List<StockData> stockData) {
+    void writeDataInCacheFile(List<StockData> stockData) {
+        if (cache.exists()) {
+            cache.delete();
+        }
+
         try (PrintWriter writer = new PrintWriter(cache)) {
             writer.write(new Gson().toJson(stockData));
         } catch (FileNotFoundException e) {
@@ -44,14 +50,12 @@ public class StockCache extends BaseCaching<List<StockData>> {
 
     @Override
     @Nullable
-    public List<StockData> readDataInCacheFile(File cache) {
+    List<StockData> readDataInCacheFile() {
         StockData[] data = null;
-        if (cache.exists()) {
-            try (FileReader reader = new FileReader(cache)) {
-                data = new Gson().fromJson(reader, StockData[].class);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try (FileReader reader = new FileReader(cache)) {
+            data = new Gson().fromJson(reader, StockData[].class);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         return data != null ? new ArrayList<>(Arrays.asList(data)) : null;
@@ -69,12 +73,11 @@ public class StockCache extends BaseCaching<List<StockData>> {
     }
 
     @Override
-    public Observable<List<StockData>> getDiskCache(File cacheFolder) {
+    public Observable<List<StockData>> getDiskCache() {
         return Observable.create(emitter -> {
             Log.d("STOCKS_DISK_READING", Thread.currentThread().getName());
-            File cache = new File(cacheFolder, getCacheFileName());
             List<StockData> stockData = null;
-            if (cache.exists() && (stockData = readDataInCacheFile(cache)) != null) {
+            if (cache.exists() && (stockData = readDataInCacheFile()) != null) {
                 emitter.onNext(stockData);
             }
             emitter.onComplete();
@@ -82,29 +85,15 @@ public class StockCache extends BaseCaching<List<StockData>> {
     }
 
     @Override
-    public void cache(List<StockData> stockData, StocksViewModel viewModel, File diskCacheDir) {
+    public void cache(List<StockData> stockData, StocksViewModel viewModel) {
         Log.d("STOCKS_CACHING", Thread.currentThread().getName());
 
         // cache in ViewModel
         viewModel.setStockData(stockData);
 
         // cache on disk
-        File cache = new File(diskCacheDir, getCacheFileName());
-        if (!cache.exists()) {
-            writeDataInCacheFile(cache, stockData);
-        } else {
-            if (cache.delete()) {
-                writeDataInCacheFile(cache, stockData);
-            } else {
-                Log.d("CACHE_STATE", "Cache (Stocks) wasn't deleted and written");
-            }
-        }
+        writeDataInCacheFile(stockData);
 
         Log.d("STOCKS_CACHING", "COMPLETE");
-    }
-
-    @Override
-    public String getCacheFileName() {
-        return cacheFileName;
     }
 }

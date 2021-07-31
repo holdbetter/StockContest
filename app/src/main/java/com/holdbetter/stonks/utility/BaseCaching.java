@@ -10,7 +10,7 @@ import java.io.File;
 import io.reactivex.rxjava3.core.Observable;
 
 abstract class BaseCaching<T> implements Caching<T> {
-    abstract void writeDataInCacheFile(File cache, T objectToWrite);
+    abstract void writeDataInCacheFile(T objectToWrite);
     @Nullable
-    abstract T readDataInCacheFile(File cache);
+    abstract T readDataInCacheFile();
 }

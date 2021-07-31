@@ -8,36 +8,33 @@ import com.holdbetter.stonks.viewmodel.StocksViewModel;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.BufferOverflowException;
 
-import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.ObservableEmitter;
-import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 
 public class ConstituentsCache extends BaseCaching<Indice> {
     private static final String cacheFileName = "constituents.txt";
     private static ConstituentsCache instance = null;
+    private final File cache;
 
-    private ConstituentsCache() {
+    private ConstituentsCache(File cache) {
+        this.cache = cache;
     }
 
-    public static ConstituentsCache getInstance() {
+    public static ConstituentsCache getInstance(File cacheDirectory) {
         if (instance == null) {
-            instance = new ConstituentsCache();
+            instance = new ConstituentsCache(new File(cacheDirectory, cacheFileName));
         }
         return instance;
     }
 
     @Override
-    public void cache(Indice freshIndiceData, StocksViewModel viewModel, File diskCacheDir) {
+    public void cache(Indice freshIndiceData, StocksViewModel viewModel) {
         Log.d("INDICE_CACHING", Thread.currentThread().getName());
 
         // exchange walmart (logo not accesible) for yandex
@@ -52,9 +49,8 @@ public class ConstituentsCache extends BaseCaching<Indice> {
         viewModel.setDowJonesIndice(freshIndiceData);
 
         // cache on disk
-        File cache = new File(diskCacheDir, getCacheFileName());
         if (!cache.exists()) {
-            writeDataInCacheFile(cache, freshIndiceData);
+            writeDataInCacheFile(freshIndiceData);
         } else {
             Indice cachedIndice = null;
             try {
@@ -65,11 +61,7 @@ public class ConstituentsCache extends BaseCaching<Indice> {
 
             // Not sure about this condition
             if (cachedIndice != null && cachedIndice.getExpiresTime() <= freshIndiceData.getLastUpdateTime()) {
-                if (cache.delete()) {
-                    writeDataInCacheFile(cache, freshIndiceData);
-                } else {
-                    Log.d("CACHE_STATE", "Cache (Indice) wasn't deleted and written");
-                }
+                writeDataInCacheFile(freshIndiceData);
             }
         }
 
@@ -77,7 +69,11 @@ public class ConstituentsCache extends BaseCaching<Indice> {
     }
 
     @Override
-    void writeDataInCacheFile(File cache, Indice indice) {
+    void writeDataInCacheFile(Indice indice) {
+        if (cache.exists()) {
+            cache.delete();
+        }
+
         try (PrintWriter writer = new PrintWriter(new FileWriter(cache, false))) {
             writer.write(new Gson().toJson(indice, Indice.class));
         } catch (IOException e) {
@@ -87,14 +83,12 @@ public class ConstituentsCache extends BaseCaching<Indice> {
 
     @Override
     @Nullable
-    Indice readDataInCacheFile(File cache) {
+    Indice readDataInCacheFile() {
         Indice indice = null;
-        if (cache.exists()) {
-            try (FileReader reader = new FileReader(cache)) {
-                indice = new Gson().fromJson(reader, Indice.class);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try (FileReader reader = new FileReader(cache)) {
+            indice = new Gson().fromJson(reader, Indice.class);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return indice;
     }
@@ -111,20 +105,14 @@ public class ConstituentsCache extends BaseCaching<Indice> {
     }
 
     @Override
-    public Observable<Indice> getDiskCache(File cacheFolder) {
+    public Observable<Indice> getDiskCache() {
         return Observable.create(emitter -> {
             Log.d("INDICE_DISK_READING", Thread.currentThread().getName());
-            File fileCache = new File(cacheFolder, getCacheFileName());
             Indice indice = null;
-            if (fileCache.exists() && (indice = readDataInCacheFile(fileCache)) != null) {
+            if (cache.exists() && (indice = readDataInCacheFile()) != null) {
                 emitter.onNext(indice);
             }
             emitter.onComplete();
         });
-    }
-
-    @Override
-    public String getCacheFileName() {
-        return cacheFileName;
     }
 }
