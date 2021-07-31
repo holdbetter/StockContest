@@ -62,7 +62,7 @@ public class StocksListFragment extends Fragment {
         PublishSubject<String> subject = PublishSubject.create();
 
         StocksViewModel stocksViewModel = new ViewModelProvider(requireActivity()).get(StocksViewModel.class);
-        File cacheDir = getContext().getCacheDir();
+        File cacheDir = getContext().getFilesDir();
         StocksRepository repository = StocksRepository.getInstance();
         ConstituentsCache constituentsCache = ConstituentsCache.getInstance(cacheDir);
         StockCache stockCache = StockCache.getInstance(cacheDir);
