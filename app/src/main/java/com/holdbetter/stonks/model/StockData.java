@@ -19,12 +19,18 @@ public class StockData
     private double priceChangePercent;
     @SerializedName(value = "isUSMarketOpen")
     private boolean isMarketOpen;
+    @SerializedName(value = "latestUpdate")
+    private long latestUpdateTime;
     @SerializedName(value = "previousClose")
     private double previousClose;
     @Expose
     private String url;
 
     public StockData() {
+    }
+
+    public long getLatestUpdateTime() {
+        return latestUpdateTime;
     }
 
     public String getSymbol() {
@@ -55,7 +61,7 @@ public class StockData
         return Math.abs(priceChangePercent) * 100;
     }
 
-    public boolean isMarketOpen() {
+    public boolean isUSMarketOpen() {
         return isMarketOpen;
     }
 

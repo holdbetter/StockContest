@@ -61,24 +61,21 @@ public class StocksListFragment extends Fragment {
 
         StocksViewModel stocksViewModel = new ViewModelProvider(requireActivity()).get(StocksViewModel.class);
         File cacheDir = getContext().getCacheDir();
-        subscribe1 = StocksRepository.getInstance()
-                .getDowJonesIndice(stocksViewModel, cacheDir)
-                .flatMap(indice -> StocksRepository.getInstance().getStocksData(stocksViewModel, cacheDir, indice))
+        StocksRepository repository = StocksRepository.getInstance();
+        subscribe1 = repository.getDowJonesIndice(stocksViewModel, cacheDir)
+                .flatMap(indice -> repository.getStocksData(stocksViewModel, cacheDir, indice))
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSuccess(httpData -> {
-                    stocksViewModel.setStockData(httpData);
-                    adapter.setStocks(httpData);
-                })
+                .doOnSuccess(adapter::setStocks)
                 .observeOn(Schedulers.io())
-                .flatMap(httpData -> StocksRepository.getInstance().subscribeToSymbols(socket, subject, httpData))
-                .subscribe(s -> Log.d("Socket", String.format("Obs2 Working on: %s%n", Thread.currentThread().getName())));
+                .flatMapMaybe(httpData -> repository.subscribeToSymbols(socket, subject, httpData))
+                .subscribe(s -> Log.d("Socket", String.format("State: %s", s.getState())));
 
         Disposable subscribe2 = subject.flatMap(t -> Observable.just(new GsonBuilder()
                 .registerTypeAdapter(TreeSet.class, new SocketMessageDeserializer())
                 .create()
                 .fromJson(t, TreeSet.class)))
                 .filter(treeSet -> !treeSet.isEmpty())
-                .doOnNext(StocksRepository.getInstance()::printSocketMessage)
+                .doOnNext(repository::printSocketMessage)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(adapter::updateStocks, Throwable::printStackTrace);

@@ -44,12 +44,14 @@ public class StockCache extends BaseCaching<List<StockData>> {
 
     @Override
     @Nullable
-    List<StockData> readDataInCacheFile(File cache) {
+    public List<StockData> readDataInCacheFile(File cache) {
         StockData[] data = null;
-        try (FileReader reader = new FileReader(cache)) {
-            data = new Gson().fromJson(reader, StockData[].class);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (cache.exists()) {
+            try (FileReader reader = new FileReader(cache)) {
+                data = new Gson().fromJson(reader, StockData[].class);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         return data != null ? new ArrayList<>(Arrays.asList(data)) : null;

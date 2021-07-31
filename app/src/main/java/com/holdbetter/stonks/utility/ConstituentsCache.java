@@ -89,10 +89,12 @@ public class ConstituentsCache extends BaseCaching<Indice> {
     @Nullable
     Indice readDataInCacheFile(File cache) {
         Indice indice = null;
-        try (FileReader reader = new FileReader(cache)) {
-            indice = new Gson().fromJson(reader, Indice.class);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (cache.exists()) {
+            try (FileReader reader = new FileReader(cache)) {
+                indice = new Gson().fromJson(reader, Indice.class);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return indice;
     }

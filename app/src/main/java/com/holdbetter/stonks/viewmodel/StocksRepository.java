@@ -2,8 +2,6 @@ package com.holdbetter.stonks.viewmodel;
 
 import android.util.Log;
 
-import androidx.lifecycle.ViewModel;
-
 import com.google.gson.Gson;
 import com.holdbetter.stonks.Credentials;
 import com.holdbetter.stonks.model.Indice;
@@ -20,12 +18,12 @@ import org.apache.commons.io.IOUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TreeSet;
 
+import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -35,7 +33,8 @@ public class StocksRepository {
 
     private static StocksRepository instance;
 
-    private StocksRepository() {}
+    private StocksRepository() {
+    }
 
     public static StocksRepository getInstance() {
         if (instance == null) {
@@ -45,11 +44,12 @@ public class StocksRepository {
         return instance;
     }
 
-    public Single<WebSocket> subscribeToSymbols(WebSocket socket,
+    public Maybe<WebSocket> subscribeToSymbols(WebSocket socket,
                                                 PublishSubject<String> subject,
                                                 List<StockData> symbols) {
-
-        return Single.fromCallable(socket::connect)
+        return Single.just(isUSMarketCurrentlyOpen())
+                .filter(isOpen -> isOpen)
+                .flatMap(marketOpen -> Maybe.just(socket.connect()))
                 .subscribeOn(Schedulers.io())
                 .map(s -> s.addListener(new WebSocketAdapter() {
                     @Override
@@ -88,6 +88,18 @@ public class StocksRepository {
                 .doOnNext(indice -> ConstituentsCache.getInstance().cache(indice, stocksViewModel, diskCache));
     }
 
+    private Boolean isUSMarketCurrentlyOpen() {
+        Log.d("CHECKING_FOR_USMARKET", Thread.currentThread().getName());
+        String answerJson = null;
+        try {
+            answerJson = IOUtils.toString(Credentials.isUSMarketOpenURL(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return Boolean.getBoolean(answerJson);
+    }
+
     private Indice getIndiceNames() {
         Log.d("INDICE_LOADING", Thread.currentThread().getName());
         String answerJson = null;
@@ -99,6 +111,7 @@ public class StocksRepository {
 
         Indice indice = new Gson().fromJson(answerJson, Indice.class);
         indice.setLastUpdateTime(Calendar.getInstance().getTimeInMillis());
+        Arrays.sort(indice.getConstituents());
 
         return indice;
     }
@@ -116,6 +129,7 @@ public class StocksRepository {
         return Observable.fromIterable(Arrays.asList(indice.getConstituents()))
                 .subscribeOn(Schedulers.io())
                 .flatMap(symbol -> Observable.just(getStockInfo(symbol)))
+                .map(stockData -> appendLogoInfo(stockData))
                 .observeOn(Schedulers.computation())
                 .toSortedList((s1, s2) -> s1.getSymbol().compareTo(s2.getSymbol()))
                 .doOnSuccess(s -> Log.d("STOCKS_LOADED", Thread.currentThread().getName()))
@@ -132,7 +146,7 @@ public class StocksRepository {
             e.printStackTrace();
         }
 
-        return appendLogoInfo(new Gson().fromJson(answerJson, StockData.class));
+        return new Gson().fromJson(answerJson, StockData.class);
     }
 
     private StockData appendLogoInfo(StockData stockData) {
