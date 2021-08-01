@@ -19,6 +19,7 @@ import com.holdbetter.stonks.databinding.StocksListFragmentBinding;
 import com.holdbetter.stonks.services.SocketMessageDeserializer;
 import com.holdbetter.stonks.utility.ConstituentsCache;
 import com.holdbetter.stonks.utility.StockCache;
+import com.holdbetter.stonks.viewmodel.SocketRepository;
 import com.holdbetter.stonks.viewmodel.StocksRepository;
 import com.holdbetter.stonks.viewmodel.StocksViewModel;
 import com.neovisionaries.ws.client.WebSocket;
@@ -80,7 +81,7 @@ public class StocksListFragment extends Fragment {
                 .create()
                 .fromJson(t, TreeSet.class)))
                 .filter(treeSet -> !treeSet.isEmpty())
-                .doOnNext(repository::printSocketMessage)
+                .doOnNext(SocketRepository::printSocketMessage)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(adapter::updateStocks, Throwable::printStackTrace);
