@@ -9,7 +9,9 @@ import java.io.File;
 import io.reactivex.rxjava3.core.Observable;
 
 interface Caching<T> {
-    void cache(T data, StocksViewModel viewModel);
+    void cacheAll(T data, StocksViewModel viewModel);
+    void cacheOnMemory(T data, StocksViewModel viewModel);
+    void cacheOnDisk(T data);
     Observable<T> getMemoryCache(StocksViewModel stocksViewModel);
     Observable<T> getDiskCache();
 }

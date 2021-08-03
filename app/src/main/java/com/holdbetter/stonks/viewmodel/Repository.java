@@ -19,6 +19,6 @@ public abstract class Repository {
             e.printStackTrace();
         }
 
-        return Boolean.getBoolean(answerJson);
+        return Boolean.parseBoolean(answerJson);
     }
 }

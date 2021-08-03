@@ -38,6 +38,7 @@ public class SymbolRepository extends Repository {
                 cacheRepository.getDiskCache(),
                 queryStockData(stocksViewModel, indice, cacheRepository))
                 .firstElement()
+                .doOnSuccess(stockData -> cacheRepository.cacheOnMemory(stockData, stocksViewModel))
                 .toSingle();
     }
 
@@ -50,7 +51,7 @@ public class SymbolRepository extends Repository {
                 .toSortedList((s1, s2) -> s1.getSymbol().compareTo(s2.getSymbol()))
                 .doOnSuccess(s -> Log.d("STOCKS_LOADED", Thread.currentThread().getName()))
                 .observeOn(Schedulers.io())
-                .doAfterSuccess(stockData -> cacheRepository.cache(stockData, stocksViewModel))
+                .doAfterSuccess(cacheRepository::cacheOnDisk)
                 .toObservable();
     }
 

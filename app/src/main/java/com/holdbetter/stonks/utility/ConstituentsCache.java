@@ -34,9 +34,20 @@ public class ConstituentsCache extends BaseCaching<Indice> {
     }
 
     @Override
-    public void cache(Indice freshIndiceData, StocksViewModel viewModel) {
+    public void cacheAll(Indice freshIndiceData, StocksViewModel viewModel) {
         Log.d("INDICE_CACHING", Thread.currentThread().getName());
+        cacheOnMemory(freshIndiceData, viewModel);
+        cacheOnDisk(freshIndiceData);
+        Log.d("INDICE_CACHING", "COMPLETE");
+    }
 
+    @Override
+    public void cacheOnMemory(Indice freshIndiceData, StocksViewModel viewModel) {
+        viewModel.setDowJonesIndice(freshIndiceData);
+    }
+
+    @Override
+    public void cacheOnDisk(Indice freshIndiceData) {
         // exchange walmart (logo not accesible) for yandex
         for (int i = 0; i < freshIndiceData.getConstituents().length; i++) {
             if (freshIndiceData.getConstituents()[i].equals("WMT")) {
@@ -45,27 +56,7 @@ public class ConstituentsCache extends BaseCaching<Indice> {
             }
         }
 
-        // cache in ViewModel
-        viewModel.setDowJonesIndice(freshIndiceData);
-
-        // cache on disk
-        if (!cache.exists()) {
-            writeDataInCacheFile(freshIndiceData);
-        } else {
-            Indice cachedIndice = null;
-            try {
-                cachedIndice = new Gson().fromJson(new FileReader(cache), Indice.class);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-
-            // Not sure about this condition
-            if (cachedIndice != null && cachedIndice.getExpiresTime() <= freshIndiceData.getLastUpdateTime()) {
-                writeDataInCacheFile(freshIndiceData);
-            }
-        }
-
-        Log.d("INDICE_CACHING", "COMPLETE");
+        writeDataInCacheFile(freshIndiceData);
     }
 
     @Override
@@ -108,7 +99,7 @@ public class ConstituentsCache extends BaseCaching<Indice> {
     public Observable<Indice> getDiskCache() {
         return Observable.create(emitter -> {
             Log.d("INDICE_DISK_READING", Thread.currentThread().getName());
-            Indice indice = null;
+            Indice indice;
             if (cache.exists() && (indice = readDataInCacheFile()) != null) {
                 emitter.onNext(indice);
             }

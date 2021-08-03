@@ -2,42 +2,27 @@ package com.holdbetter.stonks.viewmodel;
 
 import android.util.Log;
 
-import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.ViewModel;
-
-import com.google.gson.Gson;
-import com.holdbetter.stonks.Credentials;
 import com.holdbetter.stonks.model.Indice;
 import com.holdbetter.stonks.model.StockData;
-import com.holdbetter.stonks.model.StockSocketData;
-import com.holdbetter.stonks.model.WebSocketMessageToSubscribe;
 import com.holdbetter.stonks.utility.ConstituentsCache;
 import com.holdbetter.stonks.utility.StockCache;
 import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketAdapter;
 
-import org.apache.commons.io.IOUtils;
-
-import java.io.IOException;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Calendar;
+import java.io.File;
 import java.util.List;
-import java.util.TreeSet;
 
 import io.reactivex.rxjava3.core.Maybe;
-import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 
-public class StocksRepository extends Repository implements LifecycleObserver {
-    private final IndiceRepository indiceRepository = IndiceRepository.getInstance();
-    private final SymbolRepository symbolRepository = SymbolRepository.getInstance();
-    private final SocketRepository socketRepository = SocketRepository.getInstance();
-
+public class StocksRepository extends Repository {
     private static StocksRepository instance;
+
+    public final IndiceRepository indiceRepository = IndiceRepository.getInstance();
+    public final SymbolRepository symbolRepository = SymbolRepository.getInstance();
+    public final SocketRepository socketRepository = SocketRepository.getInstance();
 
     private StocksRepository() {
     }
@@ -46,7 +31,6 @@ public class StocksRepository extends Repository implements LifecycleObserver {
         if (instance == null) {
             instance = new StocksRepository();
         }
-
         return instance;
     }
 
@@ -58,9 +42,30 @@ public class StocksRepository extends Repository implements LifecycleObserver {
         return symbolRepository.getStocksData(stocksViewModel, indice, cacheRepository);
     }
 
-    public Maybe<WebSocket> subscribeToSymbols(WebSocket socket,
-                                               PublishSubject<String> subject,
+    public Maybe<WebSocket> subscribeToSymbols(PublishSubject<String> subject,
                                                List<StockData> symbols) {
-        return socketRepository.subscribeToSymbols(socket, subject, symbols);
+        return socketRepository.subscribeToSymbols(subject, symbols);
+    }
+
+    public void socketDisconnect() {
+        if (socketRepository.getSocket() != null) {
+            Log.d("SOCKET", "DISPOSE");
+            socketRepository.dispose();
+        }
+    }
+
+    public Disposable socketReconnect(File cacheDirectory, PublishSubject<String> subject, StocksViewModel stocksViewModel) {
+        return Single.just(socketRepository.isSocketAvailable())
+                .filter(available -> !available)
+                .flatMapSingle(empty -> Single.just(socketRepository.newSocketInstance()))
+                .subscribeOn(Schedulers.io())
+                .filter(webSocket -> isUSMarketCurrentlyOpen())
+                .map(socket -> socket.connect())
+                .doOnSuccess(socket -> Log.d("RECONNECT", socket.getState().toString()))
+                .map(socket -> socket.addListener(socketRepository.createListener(subject)))
+                .flatMapObservable(socket -> StockCache.getInstance(cacheDirectory).getMemoryCache(stocksViewModel))
+                .flatMapIterable(stockDataList -> stockDataList)
+                .doOnNext(socketRepository::sendMessageToSubscribe)
+                .subscribe();
     }
 }

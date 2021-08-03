@@ -76,7 +76,7 @@ public class StockCache extends BaseCaching<List<StockData>> {
     public Observable<List<StockData>> getDiskCache() {
         return Observable.create(emitter -> {
             Log.d("STOCKS_DISK_READING", Thread.currentThread().getName());
-            List<StockData> stockData = null;
+            List<StockData> stockData;
             if (cache.exists() && (stockData = readDataInCacheFile()) != null) {
                 emitter.onNext(stockData);
             }
@@ -85,15 +85,22 @@ public class StockCache extends BaseCaching<List<StockData>> {
     }
 
     @Override
-    public void cache(List<StockData> stockData, StocksViewModel viewModel) {
+    public void cacheAll(List<StockData> stockData, StocksViewModel viewModel) {
         Log.d("STOCKS_CACHING", Thread.currentThread().getName());
+        cacheOnMemory(stockData, viewModel);
+        cacheOnDisk(stockData);
+        Log.d("STOCKS_CACHING", "COMPLETE");
+    }
 
+    @Override
+    public void cacheOnMemory(List<StockData> stockData, StocksViewModel viewModel) {
         // cache in ViewModel
         viewModel.setStockData(stockData);
+    }
 
+    @Override
+    public void cacheOnDisk(List<StockData> stockData) {
         // cache on disk
         writeDataInCacheFile(stockData);
-
-        Log.d("STOCKS_CACHING", "COMPLETE");
     }
 }

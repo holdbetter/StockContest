@@ -14,8 +14,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Calendar;
 
+import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleEmitter;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class IndiceRepository extends Repository {
@@ -35,15 +40,17 @@ public class IndiceRepository extends Repository {
     public Single<Indice> getDowJonesIndice(StocksViewModel stocksViewModel, ConstituentsCache cacheRepository) {
         return Observable.concat(cacheRepository.getMemoryCache(stocksViewModel),
                 cacheRepository.getDiskCache(),
-                queryIndiceNames(stocksViewModel, cacheRepository))
+                queryIndiceNames(cacheRepository))
                 .subscribeOn(Schedulers.io())
                 .firstElement()
+                .doOnSuccess(freshIndiceData -> cacheRepository.cacheOnMemory(freshIndiceData, stocksViewModel))
                 .toSingle();
     }
 
-    private Observable<Indice> queryIndiceNames(StocksViewModel stocksViewModel, ConstituentsCache cacheRepository) {
-        return Observable.fromCallable(this::getIndiceNames)
-                .doOnNext(indice -> cacheRepository.cache(indice, stocksViewModel));
+    private Observable<Indice> queryIndiceNames(ConstituentsCache cacheRepository) {
+        return Single.fromCallable(this::getIndiceNames)
+                .doOnSuccess(cacheRepository::cacheOnDisk)
+                .toObservable();
     }
 
     private Indice getIndiceNames() {

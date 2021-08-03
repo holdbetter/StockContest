@@ -10,6 +10,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.SimpleItemAnimator;
@@ -22,61 +25,102 @@ import com.holdbetter.stonks.utility.StockCache;
 import com.holdbetter.stonks.viewmodel.SocketRepository;
 import com.holdbetter.stonks.viewmodel.StocksRepository;
 import com.holdbetter.stonks.viewmodel.StocksViewModel;
-import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketFactory;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.TreeSet;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 
-public class StocksListFragment extends Fragment {
+public class StocksListFragment extends Fragment implements LifecycleObserver {
+    private File cacheDirectory;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private StocksRecyclerAdapter adapter;
+    private StocksRepository repository;
+    private StocksViewModel viewModel;
+    private PublishSubject<String> subject;
+    private ConstituentsCache constituentsCache;
+    private StockCache stockCache;
+
+    public StocksListFragment() {
+
+    }
+
     public static Fragment getInstance() {
         return new StocksListFragment();
     }
 
-    private Disposable subscribe1;
-    private WebSocket socket;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        cacheDirectory = getContext().getFilesDir();
+        subject = PublishSubject.create();
+        viewModel = new ViewModelProvider(requireActivity()).get(StocksViewModel.class);
+        repository = StocksRepository.getInstance();
+
+        constituentsCache = ConstituentsCache.getInstance(cacheDirectory);
+        stockCache = StockCache.getInstance(cacheDirectory);
+
         StocksListFragmentBinding binding = StocksListFragmentBinding.inflate(inflater, container, false);
-        StocksRecyclerAdapter adapter = createAdapter(binding);
+        adapter = createAdapter(binding);
 
+        getViewLifecycleOwner().getLifecycle().addObserver(this);
 
-        WebSocketFactory factory = new WebSocketFactory();
+        return binding.getRoot();
+    }
 
-        try {
-            socket = factory.createSocket(Credentials.GET_SOCKET_URL, 3000);
-        } catch (IOException e) {
-            e.printStackTrace();
+    @Override
+    public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        Disposable setupData = setupConnection(subject, viewModel, constituentsCache, stockCache);
+        Disposable socketUpdate = handleSocketMessage(subject);
+
+        compositeDisposable.addAll(setupData, socketUpdate);
+    }
+
+    @OnLifecycleEvent(value = Lifecycle.Event.ON_RESUME)
+    void reconnect() {
+        Log.d("SUBSCRIPTION_COUNT_REC", compositeDisposable.size() + "");
+        if (viewModel.getStockData() == null && compositeDisposable.size() == 0) {
+            Log.d("RESTORE", "FULL");
+            compositeDisposable.add(setupConnection(subject, viewModel, constituentsCache, stockCache));
+            compositeDisposable.add(handleSocketMessage(subject));
+        } else if (compositeDisposable.size() == 0) {
+            Log.d("RESTORE", "SOCKET");
+            compositeDisposable.add(repository.socketReconnect(cacheDirectory, subject, viewModel));
+            compositeDisposable.add(handleSocketMessage(subject));
         }
+    }
 
-        PublishSubject<String> subject = PublishSubject.create();
+    @OnLifecycleEvent(value = Lifecycle.Event.ON_PAUSE)
+    void disconnect() {
+        Log.d("SUBSCRIPTION_COUNT_DISC", compositeDisposable.size() + "");
+        compositeDisposable.clear();
+        repository.socketDisconnect();
+    }
 
-        StocksViewModel stocksViewModel = new ViewModelProvider(requireActivity()).get(StocksViewModel.class);
-        File cacheDir = getContext().getFilesDir();
-        StocksRepository repository = StocksRepository.getInstance();
-        ConstituentsCache constituentsCache = ConstituentsCache.getInstance(cacheDir);
-        StockCache stockCache = StockCache.getInstance(cacheDir);
-
-        subscribe1 = repository.getDowJonesIndice(stocksViewModel, constituentsCache)
+    @NotNull
+    private Disposable setupConnection(PublishSubject<String> subject, StocksViewModel stocksViewModel, ConstituentsCache constituentsCache, StockCache stockCache) {
+        return repository.getDowJonesIndice(stocksViewModel, constituentsCache)
                 .flatMap(indice -> repository.getStocksData(stocksViewModel, indice, stockCache))
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSuccess(adapter::setStocks)
                 .observeOn(Schedulers.io())
-                .flatMapMaybe(httpData -> repository.subscribeToSymbols(socket, subject, httpData))
-                .subscribe(s -> Log.d("Socket", String.format("State: %s", s.getState())));
+                .flatMapMaybe(httpData -> repository.subscribeToSymbols(subject, httpData))
+                .subscribe(s -> Log.d("SOCKET_CONNECTION", s.getState() + ""));
+    }
 
-        Disposable subscribe2 = subject.flatMap(t -> Observable.just(new GsonBuilder()
+    @NotNull
+    private Disposable handleSocketMessage(PublishSubject<String> subject) {
+        return subject.flatMap(t -> Observable.just(new GsonBuilder()
                 .registerTypeAdapter(TreeSet.class, new SocketMessageDeserializer())
                 .create()
                 .fromJson(t, TreeSet.class)))
@@ -85,8 +129,6 @@ public class StocksListFragment extends Fragment {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(adapter::updateStocks, Throwable::printStackTrace);
-
-        return binding.getRoot();
     }
 
     @NotNull
@@ -100,13 +142,5 @@ public class StocksListFragment extends Fragment {
         dividerItemDecoration.setDrawable(ContextCompat.getDrawable(getContext(), R.drawable.divider_stock_list));
         binding.stocksRecycler.addItemDecoration(dividerItemDecoration);
         return adapter;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (subscribe1 != null) {
-            subscribe1.dispose();
-        }
     }
 }
