@@ -10,6 +10,7 @@ import com.neovisionaries.ws.client.WebSocket;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
@@ -18,6 +19,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public class StocksRepository extends Repository {
+    public static final int DELAY = 8;
     private static StocksRepository instance;
 
     public final IndiceRepository indiceRepository = IndiceRepository.getInstance();
@@ -55,10 +57,10 @@ public class StocksRepository extends Repository {
     }
 
     public Disposable socketReconnect(File cacheDirectory, PublishSubject<String> subject, StocksViewModel stocksViewModel) {
-        return Single.just(socketRepository.isSocketAvailable())
+        return Single.timer(DELAY, TimeUnit.SECONDS)
+                .flatMap(timer -> Single.just(socketRepository.isSocketAvailable()))
                 .filter(available -> !available)
                 .flatMapSingle(empty -> Single.just(socketRepository.newSocketInstance()))
-                .subscribeOn(Schedulers.io())
                 .filter(webSocket -> isUSMarketCurrentlyOpen())
                 .map(socket -> socket.connect())
                 .doOnSuccess(socket -> Log.d("RECONNECT", socket.getState().toString()))
@@ -66,6 +68,7 @@ public class StocksRepository extends Repository {
                 .flatMapObservable(socket -> StockCache.getInstance(cacheDirectory).getMemoryCache(stocksViewModel))
                 .flatMapIterable(stockDataList -> stockDataList)
                 .doOnNext(socketRepository::sendMessageToSubscribe)
+                .subscribeOn(Schedulers.io())
                 .subscribe();
     }
 }

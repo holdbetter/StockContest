@@ -5,7 +5,12 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
+import java.util.Arrays;
+
 public class StockPagerAdapter extends FragmentStateAdapter {
+    private final Fragment[] fragments = new Fragment[] { StocksListFragment.getInstance(), FavouriteListFragment.getInstance() };
+
+
     public StockPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
         super(fragmentActivity);
     }
@@ -13,18 +18,11 @@ public class StockPagerAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        switch (position) {
-            case 0:
-                return StocksListFragment.getInstance();
-            case 1:
-                return FavouriteListFragment.getInstance();
-        }
-
-        return null;
+        return fragments[position];
     }
 
     @Override
     public int getItemCount() {
-        return 2;
+        return fragments.length;
     }
 }

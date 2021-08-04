@@ -25,6 +25,11 @@ public class MainActivity extends AppCompatActivity
         ConstraintLayout root = binding.getRoot();
         setContentView(root);
 
+        binding.stocksHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        binding.stocksHeader.getRoot().setText(R.string.stocksHeader);
+        binding.favouriteHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        binding.favouriteHeader.getRoot().setText(R.string.favouriteHeader);
+
         StockPagerAdapter pagerAdapter = new StockPagerAdapter(this);
         binding.stockPager.setAdapter(pagerAdapter);
         binding.stockPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
@@ -48,11 +53,6 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
-
-        binding.stocksHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-        binding.stocksHeader.getRoot().setText(R.string.stocksHeader);
-        binding.favouriteHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-        binding.favouriteHeader.getRoot().setText(R.string.favouriteHeader);
 
 
 //        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
