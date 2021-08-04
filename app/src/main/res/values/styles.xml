@@ -28,23 +28,23 @@
         <item name="android:windowLightStatusBar">true</item>
 
         <item name="listPrimaryTextSize">18sp</item>
-        <item name="listPrimaryFontFamily">@font/montserrat_bold</item>
+        <item name="fontHeaders1">@font/montserrat_bold</item>
         <item name="listSecondaryTextSize">12sp</item>
-        <item name="listSecondaryFontFamily">@font/montserrat_semi_bold</item>
+        <item name="fontHeaders2">@font/montserrat_semi_bold</item>
         <item name="listSpaceBetweenItems">8dp</item>
         <item name="imageCornerRadius">12dp</item>
     </style>
 
     <style name="TextViewPrimary">
         <item name="android:textSize">?listPrimaryTextSize</item>
-        <item name="fontFamily">?listPrimaryFontFamily</item>
+        <item name="fontFamily">?attr/fontHeaders1</item>
         <item name="lineHeight">24dp</item>
         <item name="android:textColor">#1A1A1A</item>
     </style>
 
     <style name="TextViewSecondary">
         <item name="android:textSize">?listSecondaryTextSize</item>
-        <item name="fontFamily">?listSecondaryFontFamily</item>
+        <item name="fontFamily">?attr/fontHeaders2</item>
         <item name="lineHeight">16dp</item>
         <item name="android:textColor">#575757</item>
     </style>

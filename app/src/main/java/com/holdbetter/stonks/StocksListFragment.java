@@ -88,7 +88,7 @@ public class StocksListFragment extends Fragment implements LifecycleObserver {
 
     @OnLifecycleEvent(value = Lifecycle.Event.ON_RESUME)
     void reconnect() {
-        Log.d("SUBSCRIPTION_COUNT_REC", compositeDisposable.size() + "");
+        Log.d("ON_RECONNECT", "Subscription count: " + compositeDisposable.size());
         if (viewModel.getStockData() == null && compositeDisposable.size() == 0) {
             Log.d("RESTORE", "FULL");
             compositeDisposable.add(setupConnection(subject, viewModel, constituentsCache, stockCache));
@@ -102,7 +102,7 @@ public class StocksListFragment extends Fragment implements LifecycleObserver {
 
     @OnLifecycleEvent(value = Lifecycle.Event.ON_PAUSE)
     void disconnect() {
-        Log.d("SUBSCRIPTION_COUNT_DISC", compositeDisposable.size() + "");
+        Log.d("ON_DISCONNECT", "Subscription count: " + compositeDisposable.size());
         compositeDisposable.clear();
         repository.socketDisconnect();
     }

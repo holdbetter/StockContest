@@ -2,21 +2,14 @@ package com.holdbetter.stonks;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Button;
+import android.util.TypedValue;
 
 import com.holdbetter.stonks.databinding.ActivityMainBinding;
 import com.holdbetter.stonks.viewmodel.StocksViewModel;
-
-import java.util.zip.DeflaterOutputStream;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -32,9 +25,39 @@ public class MainActivity extends AppCompatActivity
         ConstraintLayout root = binding.getRoot();
         setContentView(root);
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        if (savedInstanceState == null) {
-            transaction.replace(R.id.stockList, StocksListFragment.getInstance()).commit();
-        }
+        StockPagerAdapter pagerAdapter = new StockPagerAdapter(this);
+        binding.stockPager.setAdapter(pagerAdapter);
+        binding.stockPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+
+                switch (position) {
+                    case 0:
+                        binding.favouriteHeader.getRoot().setSelected(false);
+                        binding.favouriteHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+                        binding.stocksHeader.getRoot().setSelected(true);
+                        binding.stocksHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+                        break;
+                    case 1:
+                        binding.stocksHeader.getRoot().setSelected(false);
+                        binding.stocksHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+                        binding.favouriteHeader.getRoot().setSelected(true);
+                        binding.favouriteHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+                        break;
+                }
+            }
+        });
+
+        binding.stocksHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        binding.stocksHeader.getRoot().setText(R.string.stocksHeader);
+        binding.favouriteHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        binding.favouriteHeader.getRoot().setText(R.string.favouriteHeader);
+
+
+//        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+//        if (savedInstanceState == null) {
+//            transaction.replace(R.id.stockList, StocksListFragment.getInstance()).commit();
+//        }
     }
 }

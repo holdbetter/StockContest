@@ -130,10 +130,8 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
     public void setStocks(@Nullable List<StockData> stocks) {
         if (stocks != null) {
             this.stocks = stocks;
-        } else {
-            this.stocks.clear();
+            notifyDataSetChanged();
         }
-        notifyDataSetChanged();
     }
 
     public static class StocksViewHolder extends RecyclerView.ViewHolder {

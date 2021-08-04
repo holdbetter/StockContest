@@ -2,8 +2,8 @@
 <resources>
     <attr name="listPrimaryTextSize" format="dimension"/>
     <attr name="listSecondaryTextSize" format="dimension"/>
-    <attr name="listPrimaryFontFamily" format="reference"/>
-    <attr name="listSecondaryFontFamily" format="reference"/>
+    <attr name="fontHeaders1" format="reference"/>
+    <attr name="fontHeaders2" format="reference"/>
     <attr name="listSpaceBetweenItems" format="dimension"/>
     <attr name="imageCornerRadius" format="dimension"/>
 </resources>

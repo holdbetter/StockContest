@@ -2,4 +2,6 @@
     <string name="app_name">Stonks</string>
     <string name="symbol_icon">Symbol Icon</string>
     <string name="add_to_watch_list">Add to watch list</string>
+    <string name="stocksHeader">Stocks</string>
+    <string name="favouriteHeader">Favourite</string>
 </resources>
