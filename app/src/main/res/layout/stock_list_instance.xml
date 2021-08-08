@@ -40,7 +40,7 @@
             android:layout_height="16dp"
             android:layout_marginStart="6dp"
             android:contentDescription="@string/add_to_watch_list"
-            android:src="@drawable/ic_star_non_selected"
+            android:src="@drawable/selector_star"
             app:layout_constraintBottom_toBottomOf="@id/stockName"
             app:layout_constraintLeft_toRightOf="@id/stockName"
             app:layout_constraintTop_toTopOf="@id/stockName" />

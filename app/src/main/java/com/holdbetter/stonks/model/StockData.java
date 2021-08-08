@@ -3,8 +3,6 @@ package com.holdbetter.stonks.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import java.text.DecimalFormat;
-
 public class StockData
 {
     @SerializedName(value = "symbol")
@@ -24,7 +22,17 @@ public class StockData
     @SerializedName(value = "previousClose")
     private double previousClose;
     @Expose
-    private String url;
+    private String logoUrl;
+    @Expose
+    private boolean isFavourite;
+
+    public boolean isFavourite() {
+        return isFavourite;
+    }
+
+    public void setFavourite(boolean favourite) {
+        isFavourite = favourite;
+    }
 
     public StockData() {
     }
@@ -53,8 +61,8 @@ public class StockData
         }
     }
 
-    public String getUrl() {
-        return url;
+    public String getLogoUrl() {
+        return logoUrl;
     }
 
     public double getPriceChangePercent() {
@@ -75,7 +83,7 @@ public class StockData
         this.priceChange = priceChange;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
     }
 }

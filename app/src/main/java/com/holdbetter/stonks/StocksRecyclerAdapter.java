@@ -11,18 +11,20 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
-import com.bumptech.glide.load.resource.bitmap.FitCenter;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.holdbetter.stonks.databinding.StockListInstanceBinding;
 import com.holdbetter.stonks.model.StockData;
 import com.holdbetter.stonks.model.StockSocketData;
+import com.holdbetter.stonks.model.room.SymbolEntity;
+import com.holdbetter.stonks.viewmodel.StocksViewModel;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,8 +33,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAdapter.StocksViewHolder> {
     private List<StockData> stocks;
+    private StocksViewModel viewModel;
+    private LifecycleOwner lifecycleOwner;
+
+    public StocksRecyclerAdapter(StocksViewModel viewModel, LifecycleOwner lifecycleOwner) {
+        this.viewModel = viewModel;
+        this.lifecycleOwner = lifecycleOwner;
+    }
 
     @NonNull
     @Override
@@ -82,10 +95,22 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
                 .diskCacheStrategy(DiskCacheStrategy.ALL);
 
         Glide.with(holder.symbolImage)
-                .load(stockData.getUrl())
+                .load(stockData.getLogoUrl())
                 .apply(options)
                 .transition(DrawableTransitionOptions.withCrossFade())
                 .into(holder.symbolImage);
+
+        viewModel.getFavouriteList().observe(lifecycleOwner, favouriteList -> {
+            holder.favouriteIndicator.setSelected(favouriteList.stream().anyMatch(s -> s.name.equals(stockData.getSymbol())));
+        });
+
+        holder.favouriteIndicator.setOnClickListener(v -> {
+            SymbolEntity entity = new SymbolEntity(stockData.getSymbol());
+            entity.isFavourite = !v.isSelected();
+            Single.create((SingleOnSubscribe<Integer>) emitter -> emitter.onSuccess(viewModel.getDatabase().getFavouriteDao().updateSymbol(entity)))
+                    .subscribeOn(Schedulers.io())
+                    .subscribe();
+        });
     }
 
     @Override
@@ -140,6 +165,7 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
         private final TextView stockPriceChange;
         private final TextView stockPrice;
         private final ImageView symbolImage;
+        private final ImageView favouriteIndicator;
         private final ConstraintLayout root;
 
         public StocksViewHolder(@NonNull @NotNull StockListInstanceBinding binding) {
@@ -149,6 +175,7 @@ public class StocksRecyclerAdapter extends RecyclerView.Adapter<StocksRecyclerAd
             stockName = binding.stockName;
             stockPrice = binding.stockPrice;
             symbolImage = binding.symbolImage;
+            favouriteIndicator = binding.favouriteIndicator;
             companyName = binding.companyName;
             stockPriceChange = binding.stockPriceChange;
         }

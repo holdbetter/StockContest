@@ -74,7 +74,7 @@ public class SymbolRepository extends Repository {
             e.printStackTrace();
         }
 
-        stockData.setUrl(new Gson().fromJson(answerJson, LogoUrl.class).url);
+        stockData.setLogoUrl(new Gson().fromJson(answerJson, LogoUrl.class).url);
         return stockData;
     }
 

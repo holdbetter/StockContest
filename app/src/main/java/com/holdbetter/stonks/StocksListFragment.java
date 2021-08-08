@@ -60,16 +60,16 @@ public class StocksListFragment extends Fragment implements LifecycleObserver {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        cacheDirectory = getContext().getFilesDir();
         subject = PublishSubject.create();
         viewModel = new ViewModelProvider(requireActivity()).get(StocksViewModel.class);
-        repository = StocksRepository.getInstance();
-
-        constituentsCache = ConstituentsCache.getInstance(cacheDirectory);
-        stockCache = StockCache.getInstance(cacheDirectory);
+        cacheDirectory = viewModel.getCacheDirectory();
+        repository = viewModel.getRepository();
+        constituentsCache = viewModel.getConstituentsCache();
+        stockCache = viewModel.getStockCache();
 
         StocksListFragmentBinding binding = StocksListFragmentBinding.inflate(inflater, container, false);
-        adapter = createAdapter(binding);
+        adapter = createAdapter(binding, viewModel);
+        binding.stocksRecycler.setAdapter(adapter);
 
         getViewLifecycleOwner().getLifecycle().addObserver(this);
 
@@ -132,11 +132,10 @@ public class StocksListFragment extends Fragment implements LifecycleObserver {
     }
 
     @NotNull
-    private StocksRecyclerAdapter createAdapter(StocksListFragmentBinding binding) {
-        StocksRecyclerAdapter adapter = new StocksRecyclerAdapter();
+    private StocksRecyclerAdapter createAdapter(StocksListFragmentBinding binding, StocksViewModel viewModel) {
+        StocksRecyclerAdapter adapter = new StocksRecyclerAdapter(viewModel, getViewLifecycleOwner());
         adapter.setHasStableIds(true);
         ((SimpleItemAnimator) binding.stocksRecycler.getItemAnimator()).setSupportsChangeAnimations(false);
-        binding.stocksRecycler.setAdapter(adapter);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
         dividerItemDecoration.setDrawable(ContextCompat.getDrawable(getContext(), R.drawable.divider_stock_list));

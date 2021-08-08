@@ -4,9 +4,11 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.holdbetter.stonks.model.StockData;
+import com.holdbetter.stonks.model.room.SymbolEntity;
 import com.holdbetter.stonks.viewmodel.StocksViewModel;
 
 import org.jetbrains.annotations.Nullable;
+import org.w3c.dom.Entity;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,6 +18,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import io.reactivex.rxjava3.core.Observable;
 
@@ -96,6 +100,9 @@ public class StockCache extends BaseCaching<List<StockData>> {
     public void cacheOnMemory(List<StockData> stockData, StocksViewModel viewModel) {
         // cache in ViewModel
         viewModel.setStockData(stockData);
+
+        SymbolEntity[] symbols = stockData.stream().flatMap((Function<StockData, Stream<SymbolEntity>>) stockData1 -> Stream.of(new SymbolEntity(stockData1.getSymbol()))).toArray(SymbolEntity[]::new);
+        viewModel.getDatabase().getFavouriteDao().insertSymbols(symbols);
     }
 
     @Override
