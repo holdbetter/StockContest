@@ -1,10 +1,10 @@
-package com.holdbetter.stonks.model;
+package com.holdbetter.stonks.model.http;
 
 import com.google.gson.Gson;
 
 public class WebSocketMessageToSubscribe {
-    private String type = "subscribe";
-    private String symbol;
+    private final String type = "subscribe";
+    private final String symbol;
 
     public WebSocketMessageToSubscribe(String symbol) {
         this.symbol = symbol;

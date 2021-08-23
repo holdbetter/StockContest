@@ -14,17 +14,11 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.holdbetter.stonks.databinding.StocksListFragmentBinding;
-import com.holdbetter.stonks.model.room.SymbolEntity;
-import com.holdbetter.stonks.viewmodel.StocksViewModel;
+import com.holdbetter.stonks.viewmodel.StockViewModel;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.stream.Collectors;
-
 public class FavouriteListFragment extends Fragment {
-    private StocksViewModel viewModel;
 
     public static FavouriteListFragment getInstance() {
         return new FavouriteListFragment();
@@ -33,32 +27,20 @@ public class FavouriteListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        viewModel = new ViewModelProvider(requireActivity()).get(StocksViewModel.class);
+        StockViewModel viewModel = new ViewModelProvider(requireActivity()).get(StockViewModel.class);
 
         StocksListFragmentBinding binding = StocksListFragmentBinding.inflate(inflater, container, false);
-        StocksRecyclerAdapter adapter = createAdapter(binding, viewModel);
+        StockRecyclerAdapter adapter = createAdapter(binding, viewModel);
         binding.stocksRecycler.setAdapter(adapter);
 
-
-        viewModel.getFavouriteList().observe(getViewLifecycleOwner(), favEntity -> {
-            adapter.setStocks(viewModel.getStockData().stream().filter(stockData -> {
-                for (SymbolEntity symbolEntity : favEntity) {
-                    if (stockData.getSymbol().equals(symbolEntity.name)) {
-                        stockData.setFavourite(true);
-                        return true;
-                    }
-                }
-                stockData.setFavourite(false);
-                return false;
-            }).collect(Collectors.toList()));
-        });
+        viewModel.getFavouriteList().observe(getViewLifecycleOwner(), adapter::setStocks);
 
         return binding.getRoot();
     }
 
     @NotNull
-    private StocksRecyclerAdapter createAdapter(StocksListFragmentBinding binding, StocksViewModel viewModel) {
-        StocksRecyclerAdapter adapter = new StocksRecyclerAdapter(viewModel, getViewLifecycleOwner());
+    private StockRecyclerAdapter createAdapter(StocksListFragmentBinding binding, StockViewModel viewModel) {
+        StockRecyclerAdapter adapter = new StockRecyclerAdapter(viewModel, getViewLifecycleOwner());
         adapter.setHasStableIds(true);
         ((SimpleItemAnimator) binding.stocksRecycler.getItemAnimator()).setSupportsChangeAnimations(false);
 

@@ -1,8 +1,8 @@
-package com.holdbetter.stonks.model;
+package com.holdbetter.stonks.model.http;
 
 import com.google.gson.annotations.SerializedName;
 
-public class StockSocketData {
+public class StockPriceBySocket {
     @SerializedName(value = "s")
     private String symbol;
     @SerializedName(value = "p")

@@ -39,13 +39,13 @@
         <item name="android:textSize">?listPrimaryTextSize</item>
         <item name="fontFamily">?attr/fontHeaders1</item>
         <item name="lineHeight">24dp</item>
-        <item name="android:textColor">#1A1A1A</item>
+        <item name="android:textColor">?colorAccent</item>
     </style>
 
     <style name="TextViewSecondary">
         <item name="android:textSize">?listSecondaryTextSize</item>
         <item name="fontFamily">?attr/fontHeaders2</item>
         <item name="lineHeight">16dp</item>
-        <item name="android:textColor">#575757</item>
+        <item name="android:textColor">?colorPrimaryDark</item>
     </style>
 </resources>

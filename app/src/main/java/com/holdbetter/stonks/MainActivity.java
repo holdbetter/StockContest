@@ -9,17 +9,20 @@ import android.os.Bundle;
 import android.util.TypedValue;
 
 import com.holdbetter.stonks.databinding.ActivityMainBinding;
-import com.holdbetter.stonks.viewmodel.StocksViewModel;
+import com.holdbetter.stonks.utility.SupportedIndiceNames;
+import com.holdbetter.stonks.viewmodel.StockViewModel;
 
 public class MainActivity extends AppCompatActivity
 {
+    public static final String INDICE_TO_REQUEST = SupportedIndiceNames.DOW_JONES;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
 
         // ViewModel initialize
-        new ViewModelProvider(this).get(StocksViewModel.class);
+        new ViewModelProvider(this).get(StockViewModel.class);
 
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         ConstraintLayout root = binding.getRoot();
@@ -53,11 +56,5 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
-
-
-//        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-//        if (savedInstanceState == null) {
-//            transaction.replace(R.id.stockList, StocksListFragment.getInstance()).commit();
-//        }
     }
 }

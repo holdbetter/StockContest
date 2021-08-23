@@ -7,8 +7,11 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {SymbolEntity.class}, version = 1)
+@Database(entities = {Symbol.class, Indice.class, Price.class}, version = 1, exportSchema = false)
 public abstract class StockDatabase extends RoomDatabase {
+    public abstract SymbolDao getSymbolDao();
+    public abstract IndiceDao getIndiceDao();
+    public abstract PriceDao getPriceDao();
     public abstract FavouriteDao getFavouriteDao();
 
     private static volatile StockDatabase database;
@@ -17,7 +20,7 @@ public abstract class StockDatabase extends RoomDatabase {
         if (database == null) {
             synchronized (StockDatabase.class) {
                 if (database == null) {
-                    database = Room.databaseBuilder(context.getApplicationContext(), StockDatabase.class, "favourite")
+                    database = Room.databaseBuilder(context.getApplicationContext(), StockDatabase.class, "stocks")
                             .build();
                 }
             }

@@ -4,23 +4,17 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.holdbetter.stonks.Credentials;
-import com.holdbetter.stonks.model.Indice;
-import com.holdbetter.stonks.utility.ConstituentsCache;
+import com.holdbetter.stonks.model.IndiceBaseInfoProvider;
+import com.holdbetter.stonks.model.http.IndiceHttp;
+import com.holdbetter.stonks.utility.IndiceCache;
 
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Calendar;
 
-import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.ObservableEmitter;
-import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.core.SingleEmitter;
-import io.reactivex.rxjava3.core.SingleOnSubscribe;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class IndiceRepository extends Repository {
@@ -37,35 +31,32 @@ public class IndiceRepository extends Repository {
         return instance;
     }
 
-    public Single<Indice> getDowJonesIndice(StocksViewModel stocksViewModel, ConstituentsCache cacheRepository) {
-        return Observable.concat(cacheRepository.getMemoryCache(stocksViewModel),
-                cacheRepository.getDiskCache(),
-                queryIndiceNames(cacheRepository))
+    public Single<? extends IndiceBaseInfoProvider> getIndice(StockViewModel stocksViewModel, IndiceCache cacheRepository, String indiceName) {
+        return Observable.concat(cacheRepository.getCache(stocksViewModel, indiceName),
+                queryIndiceNames(indiceName, stocksViewModel, cacheRepository))
                 .subscribeOn(Schedulers.io())
                 .firstElement()
-                .doOnSuccess(freshIndiceData -> cacheRepository.cacheOnMemory(freshIndiceData, stocksViewModel))
                 .toSingle();
     }
 
-    private Observable<Indice> queryIndiceNames(ConstituentsCache cacheRepository) {
-        return Single.fromCallable(this::getIndiceNames)
-                .doOnSuccess(cacheRepository::cacheOnDisk)
+    private Observable<? extends IndiceBaseInfoProvider> queryIndiceNames(String indiceName, StockViewModel stocksViewModel, IndiceCache cacheRepository) {
+        return Single.fromCallable(() -> getIndiceNames(indiceName))
+                .doOnSuccess(freshIndiceData -> cacheRepository.cache(freshIndiceData, stocksViewModel))
                 .toObservable();
     }
 
-    private Indice getIndiceNames() {
-        Log.d("INDICE_LOADING", Thread.currentThread().getName());
+    private IndiceHttp getIndiceNames(String indiceName) {
+        Log.d("INDICE_DOWNLOAD", Thread.currentThread().getName());
         String answerJson = null;
         try {
-            answerJson = IOUtils.toString(Credentials.GET_CONSTITUENTS_URL, StandardCharsets.UTF_8);
+            answerJson = IOUtils.toString(Credentials.getConstituentsURL(indiceName), StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        Indice indice = new Gson().fromJson(answerJson, Indice.class);
-        indice.setLastUpdateTime(Calendar.getInstance().getTimeInMillis());
-        Arrays.sort(indice.getConstituents());
+        IndiceHttp indiceHttp = new Gson().fromJson(answerJson, IndiceHttp.class);
+        indiceHttp.setName(indiceName);
 
-        return indice;
+        return indiceHttp;
     }
 }
