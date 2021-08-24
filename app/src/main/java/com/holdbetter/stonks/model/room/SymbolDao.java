@@ -36,6 +36,7 @@ public abstract class SymbolDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public abstract Single<long[]> insertSymbols(List<Symbol> symbols);
 
+    @Update
     public abstract Single<Integer> updateSymbols(List<Symbol> symbols);
 
     @Update
