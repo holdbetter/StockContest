@@ -69,7 +69,8 @@ public class SymbolRepository extends Repository {
                     for (SymbolHttp s : symbolHttpList) {
                         viewModel.getDatabase()
                                 .getPriceDao()
-                                .deletePricesAfterDateForSymbol(symbol.getName(), s.getLatestUpdateTimeInMillis());
+                                .deletePricesAfterDateForSymbol(symbol.getName(), s.getLatestUpdateTimeInMillis())
+                                .subscribe();
                     }
 
                     // update data from request (symbolHttpList)
