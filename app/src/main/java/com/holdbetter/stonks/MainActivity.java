@@ -46,12 +46,14 @@ public class MainActivity extends AppCompatActivity
                         binding.favouriteHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
                         binding.stocksHeader.getRoot().setSelected(true);
                         binding.stocksHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+                        binding.stocksHeader.headerTitle.requestLayout();
                         break;
                     case 1:
                         binding.stocksHeader.getRoot().setSelected(false);
                         binding.stocksHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
                         binding.favouriteHeader.getRoot().setSelected(true);
                         binding.favouriteHeader.getRoot().setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+                        binding.favouriteHeader.headerTitle.requestLayout();
                         break;
                 }
             }
