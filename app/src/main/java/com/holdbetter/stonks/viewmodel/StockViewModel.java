@@ -16,6 +16,7 @@ import com.holdbetter.stonks.utility.SymbolCache;
 import java.io.File;
 import java.util.List;
 
+import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public class StockViewModel extends AndroidViewModel {
@@ -63,7 +64,7 @@ public class StockViewModel extends AndroidViewModel {
         return repository;
     }
 
-    public LiveData<List<SymbolWithPrices>> getFavouriteList() {
+    public Flowable<List<SymbolWithPrices>> getFavouriteList() {
         return database.getFavouriteDao().getFavouriteList();
     }
 

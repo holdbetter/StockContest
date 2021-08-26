@@ -18,6 +18,11 @@ import com.holdbetter.stonks.viewmodel.StockViewModel;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Comparator;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 public class FavouriteListFragment extends Fragment {
 
     public static FavouriteListFragment getInstance() {
@@ -30,19 +35,22 @@ public class FavouriteListFragment extends Fragment {
         StockViewModel viewModel = new ViewModelProvider(requireActivity()).get(StockViewModel.class);
 
         StocksListFragmentBinding binding = StocksListFragmentBinding.inflate(inflater, container, false);
-        StockRecyclerAdapter adapter = createAdapter(binding, viewModel);
+        FavouriteRecyclerAdapter adapter = createAdapter(binding, viewModel);
         binding.stocksRecycler.setAdapter(adapter);
 
-        viewModel.getFavouriteList().observe(getViewLifecycleOwner(), adapter::setStocks);
+        viewModel.getFavouriteList()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(stocks -> adapter.setStocks(stocks));
 
         return binding.getRoot();
     }
 
     @NotNull
-    private StockRecyclerAdapter createAdapter(StocksListFragmentBinding binding, StockViewModel viewModel) {
-        StockRecyclerAdapter adapter = new StockRecyclerAdapter(viewModel, getViewLifecycleOwner());
+    private FavouriteRecyclerAdapter createAdapter(StocksListFragmentBinding binding, StockViewModel viewModel) {
+        FavouriteRecyclerAdapter adapter = new FavouriteRecyclerAdapter(viewModel, getViewLifecycleOwner());
         adapter.setHasStableIds(true);
-        ((SimpleItemAnimator) binding.stocksRecycler.getItemAnimator()).setSupportsChangeAnimations(false);
+        ((SimpleItemAnimator) binding.stocksRecycler.getItemAnimator()).setMoveDuration(100);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
         dividerItemDecoration.setDrawable(ContextCompat.getDrawable(getContext(), R.drawable.divider_stock_list));
