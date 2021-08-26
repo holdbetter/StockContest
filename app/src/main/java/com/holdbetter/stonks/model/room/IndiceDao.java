@@ -3,6 +3,7 @@ package com.holdbetter.stonks.model.room;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
 
@@ -19,7 +20,14 @@ public abstract class IndiceDao {
     @Query("SELECT * FROM indices WHERE name = :indiceName LIMIT 1")
     public abstract Single<Indice> getIndice(String indiceName);
     @Insert
-    public abstract Completable insertIndices(List<Indice> indices);
+    public abstract Completable insertIndice(Indice indice);
+    @Insert()
+    public abstract Single<long[]> insertSymbols(List<Symbol> symbols);
+    @Transaction
+    public void insertIndiceWithSymbols(IndiceWithSymbols indiceWithSymbols) {
+        insertIndice(indiceWithSymbols.indice).subscribe();
+        insertSymbols(indiceWithSymbols.symbols).subscribe();
+    }
     @Delete
     public abstract Single<Integer> deleteIndice(Indice indice);
 }

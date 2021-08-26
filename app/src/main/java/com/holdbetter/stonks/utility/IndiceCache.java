@@ -41,15 +41,13 @@ public class IndiceCache {
 
         List<Symbol> symbols = Arrays.stream(freshIndiceData.getConstituents()).flatMap((Function<String, Stream<Symbol>>) s -> Stream.of(new Symbol(s))).collect(Collectors.toList());
 
-        stocksViewModel.getDatabase()
-                .getIndiceDao()
-                .insertIndices(Collections.singletonList(new Indice(freshIndiceData.getName())))
-                .subscribe();
+        IndiceWithSymbols indiceWithSymbols = new IndiceWithSymbols();
+        indiceWithSymbols.indice = new Indice(freshIndiceData.getName());
+        indiceWithSymbols.symbols = symbols;
 
         stocksViewModel.getDatabase()
-                .getSymbolDao()
-                .insertSymbols(symbols)
-                .subscribe(indexes -> Log.d("SYMBOLS_INSERT", "SIZE: " + indexes.length));
+                .getIndiceDao()
+                .insertIndiceWithSymbols(indiceWithSymbols);
     }
 
     public Observable<? extends IndiceBaseInfoProvider> getCache(StockViewModel stocksViewModel, String indiceName) {
