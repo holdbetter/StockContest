@@ -19,8 +19,9 @@ public class Symbol implements SymbolBaseInfoProvider {
     public String logoUrl;
     public String indiceName;
 
-    public Symbol(@NonNull String name) {
+    public Symbol(@NonNull String name, String indiceName) {
         this.name = name;
+        this.indiceName = indiceName;
     }
 
     @Ignore

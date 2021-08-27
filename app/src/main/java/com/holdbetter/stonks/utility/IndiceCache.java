@@ -39,7 +39,7 @@ public class IndiceCache {
             }
         }
 
-        List<Symbol> symbols = Arrays.stream(freshIndiceData.getConstituents()).flatMap((Function<String, Stream<Symbol>>) s -> Stream.of(new Symbol(s))).collect(Collectors.toList());
+        List<Symbol> symbols = Arrays.stream(freshIndiceData.getConstituents()).flatMap((Function<String, Stream<Symbol>>) s -> Stream.of(new Symbol(s, freshIndiceData.getName()))).collect(Collectors.toList());
 
         IndiceWithSymbols indiceWithSymbols = new IndiceWithSymbols();
         indiceWithSymbols.indice = new Indice(freshIndiceData.getName());
@@ -56,7 +56,7 @@ public class IndiceCache {
             IndiceWithSymbols indiceWithSymbols = stocksViewModel.getDatabase().getIndiceDao().getIndiceWithSymbols(indiceName);
             if (indiceWithSymbols != null && indiceWithSymbols.symbols.size() != 0) {
                 IndiceHttp indiceHttp = new IndiceHttp();
-                String[] symbols = indiceWithSymbols.symbols.stream().flatMap((Function<Symbol, Stream<String>>) symbol -> Stream.of(symbol.indiceName)).toArray(String[]::new);
+                String[] symbols = indiceWithSymbols.symbols.stream().flatMap((Function<Symbol, Stream<String>>) symbol -> Stream.of(symbol.name)).toArray(String[]::new);
                 indiceHttp.setConstituents(symbols);
                 indiceHttp.setName(indiceWithSymbols.indice.name);
                 emitter.onNext(indiceHttp);

@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.holdbetter.stonks.model.http.SymbolHttp;
 import com.holdbetter.stonks.model.room.Price;
 import com.holdbetter.stonks.model.room.Symbol;
+import com.holdbetter.stonks.model.room.SymbolWithPrices;
 import com.holdbetter.stonks.viewmodel.StockViewModel;
 
 import java.util.List;
@@ -30,12 +31,15 @@ public class SymbolCache {
     public Observable<List<Symbol>> getCache(StockViewModel stocksViewModel, @NonNull String indiceName) {
         return Observable.create(emitter -> {
             Log.d("SYMBOL_NAME_READING", Thread.currentThread().getName());
-            List<Symbol> symbols = stocksViewModel.getDatabase()
-                    .getSymbolDao()
-                    .getSymbolsByIndiceName(indiceName);
+            List<SymbolWithPrices> symbols = stocksViewModel.getDatabase()
+                    .getPriceDao()
+                    .getSymbolWithPrices(indiceName)
+                    .blockingFirst();
 
-            if (symbols.size() != 0) {
-                emitter.onNext(symbols);
+            if (symbols.stream().allMatch(sp -> sp.priceList.size() > 0)) {
+                emitter.onNext(symbols.stream()
+                        .map(symbolWithPrices -> symbolWithPrices.symbol)
+                        .collect(Collectors.toList()));
             }
             emitter.onComplete();
         });

@@ -29,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -84,7 +85,10 @@ public class StockListFragment extends Fragment implements LifecycleObserver {
         viewModel.getDatabase()
                 .getPriceDao()
                 .getSymbolWithPrices(MainActivity.INDICE_TO_REQUEST)
-                .observe(getViewLifecycleOwner(), adapter::setStocks);
+                .filter(l -> l.size() > 0 && l.stream().allMatch(sp -> sp.priceList.size() > 0))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(stocks -> adapter.setStocks(stocks));
 
         compositeDisposable.addAll(setupData, socketUpdate);
     }
