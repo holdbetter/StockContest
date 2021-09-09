@@ -42,6 +42,6 @@ public abstract class SymbolDao {
     @Update
     public abstract Single<Integer> updateSymbol(Symbol symbol);
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     public abstract Single<long[]> insertPrices(List<Price> prices);
 }
