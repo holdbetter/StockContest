@@ -4,8 +4,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.holdbetter.stonks.model.SymbolBaseInfoProvider;
 
-public class SymbolHttp implements SymbolBaseInfoProvider
-{
+public class SymbolHttp implements SymbolBaseInfoProvider {
     @SerializedName(value = "symbol")
     private String name;
     @SerializedName(value = "companyName")

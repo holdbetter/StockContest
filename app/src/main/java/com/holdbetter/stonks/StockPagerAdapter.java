@@ -6,7 +6,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 public class StockPagerAdapter extends FragmentStateAdapter {
-    private final Fragment[] fragments = new Fragment[] { StockListFragment.getInstance(), FavouriteListFragment.getInstance() };
+    private final Fragment[] fragments = new Fragment[]{StockListFragment.getInstance(), FavouriteListFragment.getInstance()};
 
 
     public StockPagerAdapter(@NonNull FragmentActivity fragmentActivity) {

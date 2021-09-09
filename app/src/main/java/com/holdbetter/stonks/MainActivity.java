@@ -12,13 +12,11 @@ import com.holdbetter.stonks.databinding.ActivityMainBinding;
 import com.holdbetter.stonks.utility.SupportedIndiceNames;
 import com.holdbetter.stonks.viewmodel.StockViewModel;
 
-public class MainActivity extends AppCompatActivity
-{
+public class MainActivity extends AppCompatActivity {
     public static final String INDICE_TO_REQUEST = SupportedIndiceNames.DOW_JONES;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // ViewModel initialize
