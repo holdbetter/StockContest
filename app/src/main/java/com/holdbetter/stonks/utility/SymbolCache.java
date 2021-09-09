@@ -47,9 +47,23 @@ public class SymbolCache {
 
     public void cache(List<SymbolHttp> stockData, StockViewModel viewModel, String indiceName) {
         Log.d("SYMBOL_CACHING", Thread.currentThread().getName());
-        List<Symbol> symbols = stockData.stream().map(symbolHttp -> new Symbol(symbolHttp.getName(), symbolHttp.getCompanyName(), symbolHttp.isFavourite(), symbolHttp.getLogoUrl(), indiceName)).collect(Collectors.toList());
+        List<Symbol> symbols = stockData.stream()
+                .map(symbolHttp -> new Symbol(symbolHttp.getName(),
+                        symbolHttp.getCompanyName(),
+                        symbolHttp.isFavourite(),
+                        symbolHttp.getLogoUrl(),
+                        indiceName))
+                .collect(Collectors.toList());
 
-        List<Price> prices = stockData.stream().map(symbolHttp -> new Price(symbolHttp.getLatestUpdateTimeInMillis(), symbolHttp.getLatestPrice(), symbolHttp.isUSMarketOpen(), symbolHttp.getPriceChange(), symbolHttp.getPriceChangePercent(), symbolHttp.getPreviousClose(), symbolHttp.getName())).collect(Collectors.toList());
+        List<Price> prices = stockData.stream()
+                .map(symbolHttp -> new Price(symbolHttp.getLatestUpdateTimeInMillis(),
+                        symbolHttp.getLatestPrice(),
+                        symbolHttp.isUSMarketOpen(),
+                        symbolHttp.getPriceChange(),
+                        symbolHttp.getPriceChangePercent(),
+                        symbolHttp.getPreviousClose(),
+                        symbolHttp.getName()))
+                .collect(Collectors.toList());
 
         viewModel.getDatabase()
                 .getSymbolDao()

@@ -4,18 +4,21 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "prices")
+import org.jetbrains.annotations.NotNull;
+
+@Entity(tableName = "prices", primaryKeys = { "symbolName", "latestUpdateInMillis" })
 public class Price {
-    @PrimaryKey
     public long latestUpdateInMillis;
     public double latestPrice;
     public boolean isUSMarketOpen = true;
     public Double change;
     public Double changePercent;
     public Double previousClose;
+    @NotNull
     public String symbolName;
 
-    public Price() {
+    public Price(@NotNull String symbolName) {
+        this.symbolName = symbolName;
     }
 
     @Ignore

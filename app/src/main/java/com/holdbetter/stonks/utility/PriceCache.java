@@ -22,11 +22,9 @@ public class PriceCache {
     public void cache(TreeSet<?> treePrice, StockViewModel viewModel) {
         List<Price> freshPrices = treePrice.stream().flatMap(o -> Stream.of((StockPriceBySocket) o))
                 .flatMap(p -> {
-                    Price price = new Price();
+                    Price price = new Price(p.getSymbol());
                     price.latestPrice = p.getPrice();
                     price.latestUpdateInMillis = p.getTime();
-                    price.symbolName = p.getSymbol();
-
                     return Stream.of(price);
                 }).collect(Collectors.toList());
 
