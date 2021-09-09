@@ -8,7 +8,7 @@ import com.holdbetter.stonks.model.IndiceBaseInfoProvider;
 import com.holdbetter.stonks.model.SymbolBaseInfoProvider;
 import com.holdbetter.stonks.model.http.SymbolHttp;
 import com.holdbetter.stonks.model.room.Price;
-import com.holdbetter.stonks.model.room.Symbol;
+import com.holdbetter.stonks.model.room.SymbolPartial;
 import com.holdbetter.stonks.utility.SymbolCache;
 
 import org.apache.commons.io.IOUtils;
@@ -70,11 +70,18 @@ public class SymbolRepository extends Repository {
                         viewModel.getDatabase()
                                 .getPriceDao()
                                 .deletePricesAfterDateForSymbol(symbol.getName(), s.getLatestUpdateTimeInMillis())
-                                .subscribe();
+                                .subscribe(i -> Log.d("DELETED_PRICES", i.toString()));
                     }
 
                     // update data from request (symbolHttpList)
-                    SymbolCache.getInstance().cache(symbolHttpList, viewModel, indiceName);
+                    List<SymbolPartial> symbols = symbolHttpList.stream().map(symbolHttp -> new SymbolPartial(symbolHttp.getName(), symbolHttp.getCompanyName(), indiceName)).collect(Collectors.toList());
+
+                    List<Price> prices = symbolHttpList.stream().map(symbolHttp -> new Price(symbolHttp.getLatestUpdateTimeInMillis(), symbolHttp.getLatestPrice(), symbolHttp.isUSMarketOpen(), symbolHttp.getPriceChange(), symbolHttp.getPriceChangePercent(), symbolHttp.getPreviousClose(), symbolHttp.getName())).collect(Collectors.toList());
+
+                    viewModel.getDatabase()
+                            .getSymbolDao()
+                            .updateSymbolsPartialAddPrices(symbols, prices)
+                            .subscribe();
                 }
                 emitter.onComplete();
             } else {
